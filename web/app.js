@@ -204,54 +204,78 @@ function jefeFilterBar(onPick){
   !jefes.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null);
 }
 function vResumen(){
- const C=D.clientes,ab=abiertas(),now=new Date();
- const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
- const ag=D.agenda.filter(e=>e.tipo==='Cuenta'),hechas=ag.filter(e=>(st('agenda')[e.id]||{}).hecha).length;
- const venc=C.filter(c=>['Vencido','Este mes','1-3 meses'].includes(c.ventana)).length;
- const sinAct=C.filter(c=>{const u=ultimaActividad(c);return !u||(now-u)/864e5>30;}).length;
- const fuera=D.clientes.flatMap(c=>ofertas(c.id)).filter(o=>o.clase==='Fuera de catálogo').length;
- const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
- const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
- const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
- const jefes=por('jefe').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),color:x.label==='Sin dato'?undefined:'var(--brand)'}));
- const porDueno=[...new Map(C.map(c=>[ejecVentaLabel(c),0])).keys()].map(v=>({label:v,n:C.filter(c=>ejecVentaLabel(c)===v).length,href:'#/cuentas?dueno='+encodeURIComponent(v=== 'Sin dueño Claro'?'__none__':v)})).sort((a,b)=>b.n-a.n);
- const etapas=ETAPAS.filter(e=>!['Perdida'].includes(e)).map(e=>{const os=D.clientes.flatMap(c=>ofertas(c.id)).filter(o=>o.etapa===e);return {label:e,n:sum(os,o=>o.monto),text:nf.format(os.length)+' · '+nf.format(sum(os,o=>o.monto))};});
- const conv=olas.map(o=>{const cs=C.filter(c=>c.ola===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
- const madOrden=['Sin registrar','Sin presencia','Básica','Media','Alta'];
- const potOrden=['Sin registrar','Bajo','Medio','Alto'];
- const madBars=madOrden.map(l=>({label:l,n:C.filter(c=>madurezDe(presencia(c.id))===l).length,href:'#/cuentas?pres='+encodeURIComponent(l)})).filter(x=>x.n);
- const potBars=potOrden.map(l=>({label:l,n:C.filter(c=>potencialDe(presencia(c.id))===l).length,href:'#/cuentas?pot='+encodeURIComponent(l),color:l==='Alto'?'var(--ok)':l==='Bajo'?'var(--bad)':undefined})).filter(x=>x.n);
- const proxAgenda=D.agenda.filter(e=>e.tipo==='Cuenta').map(e=>({titulo:e.titulo,cuenta_id:e.cuenta_id,slot:(st('agenda')[e.id]||{}).slot||`${e.fecha} ${e.hora}`}));
- const proxProg=reunionesProg().map(r=>({titulo:clienteById(r.cuenta_id)?.empresa||r.titulo,cuenta_id:r.cuenta_id,slot:`${r.fecha} ${r.hora}`}));
- const prox=[...proxAgenda,...proxProg].sort((a,b)=>a.slot.localeCompare(b.slot));
- const hoy=now.toISOString().slice(0,10);let nx=prox.filter(x=>x.slot>=hoy).slice(0,6);const futuro=nx.length>0;if(!nx.length)nx=prox.slice(0,6);
- return h('div',{class:'view'},
-  h('header',{class:'page-head'},
-   h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),
-   h('h1',{},'Resumen'),
-   h('p',{class:'sub'},`${C.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`)),
-  h('div',{class:'grid kpis-hero'},
-   kpi(nf.format(C.length),'Cuentas','hero-kpi'),
-   kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)','hero-kpi'),
-   kpi(nf.format(sum(ab,o=>o.monto)),'Pipeline abierto','hero-kpi')),
-  h('div',{class:'grid kpis'},
-   kpi(nf.format(sum(ab,o=>o.monto*o.prob/100)),'Pipeline ponderado','kpi-sec'),
-   kpi(`${contact}/${C.length}`,'Contactadas','kpi-sec'),
-   kpi(`${hechas}/${ag.length}`,'Reuniones hechas','kpi-sec'),
-   kpi(nf.format(venc),'Vence ≤ 3 meses','kpi-sec'),
-   kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec'),
-   kpi(nf.format(fuera),'Fuera de catálogo','kpi-sec')),
-  h('div',{class:'grid cols'},
-   h('div',{class:'card glass'},h('h2',{},'Por jefe'),bars(jefes)),
-   h('div',{class:'card glass'},h('h2',{},'Por ejecutivo de venta (Dueño Claro)'),bars(porDueno,{color:'var(--info)'})),
-   h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),
-   h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),
-   h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa'),bars(etapas,{color:'var(--brand)'})),
-   h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola'),bars(conv,{color:'var(--ok)'})),
-   h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--info)'})),
-   h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
-  h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones':'Primeras reuniones'),
-   h('ul',{class:'list'},nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))))));
+ const root=h('div',{class:'view'});
+ const draw=()=>{
+  const C=conJefe(D.clientes),now=new Date();
+  const ab=C.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)).map(o=>({...o,cid:c.id})));
+  const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
+  const ag=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&clienteById(e.cuenta_id)?.jefe===Q.jefe)));
+  const hechas=ag.filter(e=>(st('agenda')[e.id]||{}).hecha).length;
+  const venc=C.filter(c=>['Vencido','Este mes','1-3 meses'].includes(c.ventana)).length;
+  const sinAct=C.filter(c=>{const u=ultimaActividad(c);return !u||(now-u)/864e5>30;}).length;
+  const fuera=C.flatMap(c=>ofertas(c.id)).filter(o=>o.clase==='Fuera de catálogo').length;
+  const ola1=C.filter(c=>c.ola==='Ola 1').length;
+  const sinDueno=C.filter(c=>!duenoOf(c)).length;
+  const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
+  const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
+  const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
+  const jefes=por('jefe').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),text:`${x.n} · L ${nf.format(sum(C.filter(c=>(c.jefe||'Sin dato')===x.label),c=>c.fact))}`,color:x.label==='Sin dato'?undefined:'var(--brand)'}));
+  const porDueno=[...new Map(C.map(c=>[ejecVentaLabel(c),0])).keys()].map(v=>({label:v,n:C.filter(c=>ejecVentaLabel(c)===v).length,href:'#/cuentas?dueno='+encodeURIComponent(v==='Sin dueño Claro'?'__none__':v)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):'')})).sort((a,b)=>b.n-a.n);
+  const etapas=ETAPAS.filter(e=>!['Perdida'].includes(e)).map(e=>{const os=C.flatMap(c=>ofertas(c.id)).filter(o=>o.etapa===e);return {label:e,n:sum(os,o=>o.monto),text:nf.format(os.length)+' · '+nf.format(sum(os,o=>o.monto))};});
+  const conv=olas.map(o=>{const cs=C.filter(c=>c.ola===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
+  const madOrden=['Sin registrar','Sin presencia','Básica','Media','Alta'];
+  const potOrden=['Sin registrar','Bajo','Medio','Alto'];
+  const madBars=madOrden.map(l=>({label:l,n:C.filter(c=>madurezDe(presencia(c.id))===l).length,href:'#/cuentas?pres='+encodeURIComponent(l)})).filter(x=>x.n);
+  const potBars=potOrden.map(l=>({label:l,n:C.filter(c=>potencialDe(presencia(c.id))===l).length,href:'#/cuentas?pot='+encodeURIComponent(l),color:l==='Alto'?'var(--ok)':l==='Bajo'?'var(--bad)':undefined})).filter(x=>x.n);
+  const proxAgenda=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&clienteById(e.cuenta_id)?.jefe===Q.jefe))).map(e=>({titulo:e.titulo,cuenta_id:e.cuenta_id,slot:(st('agenda')[e.id]||{}).slot||`${e.fecha} ${e.hora}`}));
+  const proxProg=reunionesProg().filter(r=>!Q.jefe||clienteById(r.cuenta_id)?.jefe===Q.jefe).map(r=>({titulo:clienteById(r.cuenta_id)?.empresa||r.titulo,cuenta_id:r.cuenta_id,slot:`${r.fecha} ${r.hora}`}));
+  const prox=[...proxAgenda,...proxProg].sort((a,b)=>a.slot.localeCompare(b.slot));
+  const hoy=now.toISOString().slice(0,10);let nx=prox.filter(x=>x.slot>=hoy).slice(0,6);const futuro=nx.length>0;if(!nx.length)nx=prox.slice(0,6);
+  const jefeCards=jefesDisponibles().map(j=>{
+   const cs=D.clientes.filter(c=>c.jefe===j);
+   const o1=cs.filter(c=>c.ola==='Ola 1').length;
+   const cont=cs.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
+   const active=Q.jefe===j;
+   return h('button',{class:'card glass jefe-kpi'+(active?' on':''),onclick:()=>{Q.jefe=active?'':j;draw();}},
+    h('div',{class:'jefe-kpi-top'},h('strong',{},j),h('span',{class:'chip'},`${cs.length} cuentas`)),
+    h('div',{class:'jefe-kpi-metrics'},
+     h('div',{},h('b',{},nf.format(sum(cs,c=>c.fact))),h('span',{},'Facturación (L)')),
+     h('div',{},h('b',{},String(o1)),h('span',{},'Ola 1')),
+     h('div',{},h('b',{},`${cont}/${cs.length}`),h('span',{},'Contactadas'))));
+  });
+  root.replaceChildren(
+   h('header',{class:'page-head'},
+    h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),
+    h('h1',{},'Resumen'),
+    h('p',{class:'sub'},Q.jefe?`${Q.jefe} · ${C.length} cuentas · Corte ${D.meta.corte}`:`${D.clientes.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`)),
+   jefeFilterBar(draw),
+   h('div',{class:'grid kpis-hero'},
+    kpi(nf.format(C.length),Q.jefe?'Cuentas del jefe':'Cuentas','hero-kpi'),
+    kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)','hero-kpi'),
+    kpi(nf.format(sum(ab,o=>o.monto)),'Pipeline abierto','hero-kpi')),
+   h('section',{class:'block'},
+    h('h2',{class:'section-title'},'KPI por jefe'),
+    h('div',{class:'grid jefes-kpis'},...jefeCards)),
+   h('div',{class:'grid kpis kpis-6'},
+    kpi(nf.format(ola1),'Ola 1','kpi-sec'),
+    kpi(nf.format(sinDueno),'Sin dueño Claro','kpi-sec'),
+    kpi(`${contact}/${C.length}`,'Contactadas','kpi-sec'),
+    kpi(nf.format(venc),'Vence ≤ 3 meses','kpi-sec'),
+    kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec'),
+    kpi(`${hechas}/${ag.length||0}`,'Reuniones hechas','kpi-sec')),
+   h('div',{class:'grid cols-2'},
+    h('div',{class:'card glass'},h('h2',{},'Por jefe'),bars(jefes)),
+    h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),
+    h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),
+    h('div',{class:'card glass'},h('h2',{},'Por ejecutivo de venta'),bars(porDueno,{color:'var(--info)'})),
+    h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa'),bars(etapas,{color:'var(--brand)'})),
+    h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola'),bars(conv,{color:'var(--ok)'})),
+    h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--info)'})),
+    h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
+   h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones':'Primeras reuniones'),
+    h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones en este recorte')))));
+ };
+ draw();return root;
 }
 
 function filtroCuentas(){
