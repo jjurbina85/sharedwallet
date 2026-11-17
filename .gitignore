@@ -1,5 +1,6 @@
-# Datos reales de Claro: nunca al repositorio
+# Datos reales de Claro / prospección: nunca al repositorio
 datos-wallet-claro.json
+prospeccion-por-jefe.json
 web/data/real*.json
 *.local.json
 .DS_Store
