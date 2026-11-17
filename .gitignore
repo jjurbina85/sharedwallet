@@ -1,0 +1,9 @@
+# Datos reales de Claro: nunca al repositorio
+datos-wallet-claro.json
+web/data/real*.json
+*.local.json
+.DS_Store
+
+# Cursor / IDE local
+.specstory/
+.cursorindexingignore
