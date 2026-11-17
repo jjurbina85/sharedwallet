@@ -245,3 +245,48 @@ input[type=search]{min-width:0;width:100%}
 .rubro-sols{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .rubro-sols:first-of-type{margin-top:12px;padding-top:0;border-top:0}
 .rubro-sols h3{margin:0 0 8px;font-size:15px;font-weight:650;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+
+/* ----- embudo ----- */
+.kpis-embudo-link{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px}
+.kpi-cta .cell{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.embudo-controls{margin-bottom:14px}
+.embudo-actions{margin-top:12px;justify-content:space-between}
+.embudo-block{margin-bottom:14px;border:1px solid rgba(200,16,46,.2)}
+.embudo-list-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.embudo-list-head h2{margin-bottom:4px}
+.embudo-table{margin-top:4px}
+.embudo-row{animation:fadeUp .45s var(--ease) both}
+.embudo-row.dim td{opacity:.78}
+.embudo-row .meta{font-size:11px;margin-top:2px}
+.embudo-discard{margin-top:14px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--fg)}
+.toggle input{width:auto;min-height:0;accent-color:var(--brand)}
+.funnel{margin-bottom:14px;padding:18px 18px 12px}
+.funnel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.funnel-head h2{margin:0 0 4px}
+.funnel-sub{margin:0;font-size:13px}
+.funnel-stage{margin-bottom:14px;animation:fadeUp .5s var(--ease) both}
+.funnel-stage.blocked{opacity:.55}
+.funnel-meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px}
+.funnel-label{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.funnel-step{
+  display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+  font-size:11px;background:var(--chip);border:1px solid var(--line);color:var(--muted);flex:none;
+}
+.funnel-stats{font-size:13px;white-space:nowrap}
+.funnel-stats b{font-size:15px;margin-right:4px}
+.funnel-track{
+  height:12px;border-radius:980px;background:rgba(17,17,20,.06);overflow:hidden;
+  border:1px solid var(--line);
+}
+.funnel-fill{
+  display:block;height:100%;width:0;border-radius:980px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--fc) 75%,#fff),var(--fc));
+  transition:width .7s var(--ease);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--fc) 25%,transparent);
+}
+.funnel-note{font-size:12px;margin-top:5px}
+@media (max-width:720px){
+  .kpis-embudo-link{grid-template-columns:1fr}
+  .funnel-meta{flex-wrap:wrap}
+}

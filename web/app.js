@@ -188,6 +188,7 @@ function clashMessages(fecha,hora,durMin,exceptId){
 
 // ---------- vistas ----------
 const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:'',factBand:''};
+const E={rubro:'',ola:'',vent:'',hideDesc:true};
 const SENAL_DEFS=[
  {k:'vpn',label:'VPN site-to-site'},
  {k:'casa',label:'Servicios en casa / proyecto'},
@@ -308,6 +309,79 @@ function conAlcance(list){
  if(m&&Q.factBand==='bajo')L=L.filter(c=>factOf(c)<m);
  return L;
 }
+
+// ---------- embudo de decantación ----------
+function montoPonderado(c){
+ return ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa))
+  .reduce((s,o)=>s+(Number(o.monto)||0)*((Number(o.prob)||0)/100),0);
+}
+function pipelinePonderado(list){return sum(list,montoPonderado);}
+function clasificarCuenta(c){
+ const minF=getMinFact();
+ const ola1=c.ola==='Ola 1';
+ if(!minF)return{status:'bloqueado',reasons:['Sin umbral de facturación'],protegidoOla1:false};
+ if(estado(c)==='En pausa')return{status:'en_pausa',reasons:['En pausa'],protegidoOla1:false};
+ const pot=potencialDe(presencia(c.id));
+ const fact=factRaw(c);
+ if(fact==null||pot==='Sin registrar'){
+  const reasons=[];
+  if(fact==null)reasons.push('Sin facturación');
+  if(pot==='Sin registrar')reasons.push('Potencial sin registrar');
+  return{status:'pendiente',reasons,protegidoOla1:ola1};
+ }
+ const reasons=[];
+ const okFact=fact>=minF;
+ const okTier=c.tier==='A'||c.tier==='B';
+ const okPot=pot==='Medio'||pot==='Alto';
+ if(!okFact)reasons.push('Facturación bajo umbral');
+ if(!okTier)reasons.push('Tier fuera de A/B');
+ if(!okPot)reasons.push('Potencial bajo');
+ if(okFact&&okTier&&okPot)return{status:'aplica',reasons:[],protegidoOla1:false};
+ if(ola1)return{status:'aplica',reasons,protegidoOla1:true};
+ return{status:'sugerir_pausa',reasons,protegidoOla1:false};
+}
+function embudoStages(list){
+ const minF=getMinFact();
+ const total=Math.max(1,list.length);
+ const pct=n=>Math.round(100*n/total);
+ if(!minF){
+  return[
+   {key:'universo',label:'Base total',n:list.length,pct:100,note:'Universo inicial',color:'var(--muted)'},
+   {key:'fact',label:'Facturación ≥ umbral',n:0,pct:0,note:'Define umbral en Ajustes',color:'var(--brand)',blocked:true},
+   {key:'tier',label:'Tier A o B',n:0,pct:0,note:'Bloqueado',color:'var(--info)',blocked:true},
+   {key:'pot',label:'Potencial Medio o Alto',n:0,pct:0,note:'Bloqueado',color:'var(--warn)',blocked:true},
+   {key:'aplican',label:'Aplican al seguimiento',n:0,pct:0,note:'Sin calificación',color:'var(--ok)',blocked:true}
+  ];
+ }
+ const factPass=list.filter(c=>factRaw(c)!=null&&factRaw(c)>=minF);
+ const tierPass=factPass.filter(c=>c.tier==='A'||c.tier==='B');
+ const potPass=tierPass.filter(c=>{const p=potencialDe(presencia(c.id));return p==='Medio'||p==='Alto';});
+ const aplican=list.filter(c=>clasificarCuenta(c).status==='aplica');
+ return[
+  {key:'universo',label:'Base total',n:list.length,pct:100,note:'Universo inicial',color:'var(--muted)'},
+  {key:'fact',label:`Facturación ≥ L ${nf.format(minF)}`,n:factPass.length,pct:pct(factPass.length),note:`${factPass.length} sobre umbral`,color:'var(--brand)'},
+  {key:'tier',label:'Tier A o B',n:tierPass.length,pct:pct(tierPass.length),note:`${tierPass.length} encajan en ICP`,color:'var(--info)'},
+  {key:'pot',label:'Potencial Medio o Alto',n:potPass.length,pct:pct(potPass.length),note:`${potPass.length} con potencial`,color:'var(--warn)'},
+  {key:'aplican',label:'Aplican al seguimiento',n:aplican.length,pct:pct(aplican.length),note:`${aplican.length} para seguimiento`,color:'var(--ok)'}
+ ];
+}
+function confirmarPausaCuenta(c){
+ st('estados')[c.id]='En pausa';
+ for(const o of ofertas(c.id)){
+  if(['Ganada','Perdida'].includes(o.etapa))continue;
+  o.etapa='Perdida';
+  Object.assign(o,stamp());
+ }
+ saveState();
+ toast(`Pausa confirmada · ${c.empresa}`);
+}
+function filtroEmbudoBase(){
+ let L=conJefe(D.clientes);
+ if(E.rubro)L=L.filter(c=>c.rubro===E.rubro);
+ if(E.ola)L=L.filter(c=>c.ola===E.ola);
+ if(E.vent)L=L.filter(c=>c.ventana===E.vent);
+ return L;
+}
 function jefeFilterBar(onPick){
  const jefes=jefesDisponibles();
  return h('div',{class:'jefe-bar'},
@@ -348,6 +422,8 @@ function vResumen(){
   const sinDueno=C.filter(c=>!duenoOf(c)).length;
   const minF=getMinFact();
   const sobreMin=minF?C.filter(c=>factOf(c)>=minF).length:null;
+  const pond=pipelinePonderado(C);
+  const aplicanN=minF?C.filter(c=>clasificarCuenta(c).status==='aplica').length:null;
   const porJefe=[...new Map(C.map(c=>[jefeOf(c)||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(jefeOf(c)||'Sin dato')===v).length}));
   const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
   const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
@@ -394,6 +470,10 @@ function vResumen(){
     kpi(nf.format(C.length),Q.jefe||Q.factBand?'Cuentas filtradas':'Cuentas','hero-kpi'),
     kpi(nf.format(sum(C,factOf)),'Facturación (L)','hero-kpi'),
     kpi(minF?`${sobreMin}/${C.length}`:nf.format(sum(ab,o=>o.monto)),minF?`Sobre umbral L ${nf.format(minF)}`:'Pipeline abierto','hero-kpi')),
+   h('div',{class:'grid kpis kpis-embudo-link'},
+    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','kpi-sec'),
+    kpi(aplicanN==null?'—':`${aplicanN}/${C.length}`,minF?'Aplican (gate)':'Embudo sin umbral','kpi-sec'),
+    h('div',{class:'card kpi glass kpi-sec kpi-cta'},h('a',{class:'cell',href:'#/embudo'},'Abrir embudo'),h('span',{},'Decantación comercial'))),
    h('section',{class:'block'},
     h('h2',{class:'section-title'},'KPI por jefe'),
     h('div',{class:'grid jefes-kpis'},...jefeCards)),
@@ -768,7 +848,132 @@ function vAjustes(){
     backups.length?h('ul',{class:'list'},backups.map(b=>h('li',{},h('span',{},`${fdate(b.at.slice(0,10))} ${b.at.slice(11,16)}`,b.by?` · ${b.by}`:''),
      h('button',{class:'sm',onclick:()=>{S=b.state;saveState({backup:false});toast('Versión restaurada');route();}},'Restaurar')))):h('p',{class:'empty'},'Aún no hay versiones guardadas.'))));}
 
-const routes={resumen:vResumen,cuentas:vCuentas,rubros:vRubros,agenda:vAgenda,catalogo:vCatalogo,ajustes:vAjustes};
+function vEmbudo(){
+ const root=h('div',{class:'view embudo-view'});
+ const pauseConf={};
+ const draw=()=>{
+  const minF=getMinFact();
+  const base=filtroEmbudoBase();
+  const stages=embudoStages(base);
+  const clasificados=base.map(c=>({c,cl:clasificarCuenta(c)}));
+  const aplican=clasificados.filter(x=>x.cl.status==='aplica')
+   .sort((a,b)=>(b.c.score??-1)-(a.c.score??-1)||montoPonderado(b.c)-montoPonderado(a.c));
+  const pendientes=clasificados.filter(x=>x.cl.status==='pendiente');
+  const sugeridos=clasificados.filter(x=>x.cl.status==='sugerir_pausa');
+  const enPausa=clasificados.filter(x=>x.cl.status==='en_pausa');
+  const descartados=[...sugeridos,...enPausa];
+  const pond=pipelinePonderado(aplican.map(x=>x.c));
+  const tasa=minF&&base.length?Math.round(100*aplican.length/base.length):null;
+  const rubros=[...new Set(D.clientes.map(c=>c.rubro).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const ventanas=[...new Set(D.clientes.map(c=>c.ventana).filter(Boolean))];
+
+  const funnel=h('div',{class:'funnel card glass'},
+   h('div',{class:'funnel-head'},
+    h('div',{},h('h2',{},'Decantación de la base'),h('p',{class:'muted funnel-sub'},'Estrechamiento según filtros y gate comercial')),
+    h('span',{class:'chip'},minF?'Gate activo':'Sin umbral')),
+   ...stages.map((s,i)=>h('div',{class:'funnel-stage'+(s.blocked?' blocked':'')},
+    h('div',{class:'funnel-meta'},
+     h('span',{class:'funnel-label'},h('span',{class:'funnel-step'},String(i+1)),s.label),
+     h('span',{class:'funnel-stats'},h('b',{},nf.format(s.n)),h('span',{class:'muted'},` ${s.pct}%`))),
+    h('div',{class:'funnel-track'},h('i',{class:'funnel-fill',style:`--fc:${s.color};width:0%`,'data-w':String(s.pct)})),
+    h('div',{class:'funnel-note muted'},s.note))));
+
+  const chipCl=cl=>{
+   if(cl.protegidoOla1)return h('span',{class:'chip warn'},'Ola 1 protegida');
+   if(cl.status==='aplica')return h('span',{class:'chip ok'},'Aplica');
+   if(cl.status==='pendiente')return h('span',{class:'chip muted'},'Pendiente');
+   if(cl.status==='sugerir_pausa')return h('span',{class:'chip bad'},'Sugerir pausa');
+   if(cl.status==='en_pausa')return h('span',{class:'chip bad'},'En pausa');
+   return h('span',{class:'chip muted'},'Bloqueado');
+  };
+
+  const rowAplica=({c,cl})=>{
+   const pot=potencialDe(presencia(c.id));
+   const pondC=montoPonderado(c);
+   return h('tr',{class:'embudo-row'},
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},c.ola||'—')),
+    h('td',{},c.rubro||'—'),
+    h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier||'—')),
+    h('td',{class:'num'},c.score??'n/d'),
+    h('td',{},h('span',{class:'chip '+chipPot(pot)},pot)),
+    h('td',{class:'num'},factRaw(c)==null?'—':nf.format(factOf(c))),
+    h('td',{class:'num'},pondC?nf.format(Math.round(pondC)):'—'),
+    h('td',{},chipCl(cl)),
+    h('td',{},h('a',{class:'btn sm brand',href:'#/cliente/'+c.id},'Seguimiento')));
+  };
+
+  const rowDesc=({c,cl})=>{
+   const btn=cl.status==='sugerir_pausa'?h('button',{class:'sm danger',onclick:()=>{
+    if(!pauseConf[c.id]){pauseConf[c.id]=1;toast('Toca otra vez para confirmar Pausa');setTimeout(()=>delete pauseConf[c.id],3000);return;}
+    delete pauseConf[c.id];confirmarPausaCuenta(c);draw();
+   }},'Confirmar Pausa'):h('span',{class:'muted'},'Archivada');
+   return h('tr',{class:'embudo-row dim'},
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},(cl.reasons||[]).join(' · ')||c.ola)),
+    h('td',{},c.rubro||'—'),
+    h('td',{},chipCl(cl)),
+    h('td',{},btn));
+  };
+
+  const listAplica=aplican.length
+   ?h('div',{class:'wrap embudo-table'},h('table',{},
+    h('thead',{},h('tr',{},['Empresa','Rubro','Tier','Score','Potencial','Facturación','Ponderado','Estado',''].map((t,i)=>h('th',{class:[3,5,6].includes(i)?'num':''},t)))),
+    h('tbody',{},aplican.map(rowAplica))))
+   :h('p',{class:'empty'},minF?'Ninguna cuenta aplica con los filtros y el gate actuales.':'Define un umbral de facturación en Ajustes para calificar.');
+
+  const showDesc=!E.hideDesc&&(descartados.length||pendientes.length);
+  const listDesc=showDesc?h('div',{class:'card glass embudo-discard'},
+   h('h2',{},'Descartados y pendientes'),
+   pendientes.length?h('p',{class:'muted'},`${pendientes.length} pendiente(s) de datos — no se sugiere Pausa.`):null,
+   descartados.length
+    ?h('div',{class:'wrap'},h('table',{},
+     h('thead',{},h('tr',{},['Empresa','Rubro','Estado',''].map(t=>h('th',{},t)))),
+     h('tbody',{},descartados.map(rowDesc))))
+    :h('p',{class:'empty'},'Sin descartados en este recorte.')):null;
+
+  root.replaceChildren(
+   h('header',{class:'page-head'},
+    h('div',{class:'eyebrow'},h('span',{class:'live-pill'},'Decantación')),
+    h('h1',{},'Embudo'),
+    h('p',{class:'sub'},'Depura la cartera con filtros y gate (umbral + tier A/B + potencial Medio/Alto). Ola 1 no se archiva por el gate.')),
+   jefeFilterBar(draw),
+   !minF?h('div',{class:'card glass embudo-block'},
+    h('h2',{},'Calificación bloqueada'),
+    h('p',{class:'muted'},'Sin umbral de facturación no se calcula quién aplica.'),
+    h('p',{class:'row'},h('a',{class:'btn brand',href:'#/ajustes'},'Ir a Ajustes'))):null,
+   h('div',{class:'card glass embudo-controls'},
+    h('div',{class:'filters filters-top'},
+     field('Rubro',sel(rubros,E.rubro,v=>{E.rubro=v;draw();},{any:'Todos',label:'Rubro'})),
+     field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],E.ola,v=>{E.ola=v;draw();},{any:'Todas',label:'Ola'})),
+     field('Ventana',sel(ventanas,E.vent,v=>{E.vent=v;draw();},{any:'Todas',label:'Ventana'}))),
+    h('div',{class:'row embudo-actions'},
+     h('label',{class:'toggle'},
+      h('input',{type:'checkbox',checked:E.hideDesc,onchange:e=>{E.hideDesc=!!e.target.checked;draw();}}),
+      'Ocultar descartados'),
+     h('button',{class:'sm',onclick:()=>{E.rubro='';E.ola='';E.vent='';E.hideDesc=true;Q.jefe='';draw();}},'Restablecer filtros'))),
+   h('div',{class:'grid kpis-hero'},
+    kpi(tasa==null?'—':`${tasa}%`,'Tasa calificación','hero-kpi'),
+    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','hero-kpi'),
+    kpi(nf.format(aplican.length),`Aplican · de ${base.length}`,'hero-kpi')),
+   funnel,
+   h('div',{class:'card glass'},
+    h('div',{class:'embudo-list-head'},
+     h('div',{},h('h2',{},'Clientes que aplican al seguimiento'),h('p',{class:'muted funnel-sub'},'Ordenados por score y monto ponderado')),
+     h('span',{class:'chip ok'},String(aplican.length))),
+    listAplica),
+   listDesc);
+
+  requestAnimationFrame(()=>{
+   root.querySelectorAll('.funnel-fill').forEach(el=>{
+    const w=el.getAttribute('data-w')||'0';
+    requestAnimationFrame(()=>{el.style.width=w+'%';});
+   });
+  });
+ };
+ draw();
+ return root;
+}
+
+const routes={resumen:vResumen,embudo:vEmbudo,cuentas:vCuentas,rubros:vRubros,agenda:vAgenda,catalogo:vCatalogo,ajustes:vAjustes};
 function route(){
  const [path,qs]=location.hash.replace(/^#\/?/,'').split('?');const [r,arg]=path.split('/');
  if(qs){const p=new URLSearchParams(qs);for(const [k,v] of p)if(k in Q)Q[k]=v;history.replaceState(null,'','#/'+path);}
