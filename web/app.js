@@ -187,7 +187,9 @@ function clashMessages(fecha,hora,durMin,exceptId){
 }
 
 // ---------- vistas ----------
-const Q={q:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:''};
+const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:''};
+const duenoOf=c=>(c.dueno&&String(c.dueno).trim())||'';
+const ejecVentaLabel=c=>duenoOf(c)||'Sin dueño Claro';
 function vResumen(){
  const C=D.clientes,ab=abiertas(),now=new Date();
  const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
@@ -199,6 +201,7 @@ function vResumen(){
  const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
  const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
  const jefes=por('jefe').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),color:x.label==='Sin dato'?undefined:'var(--brand)'}));
+ const porDueno=[...new Map(C.map(c=>[ejecVentaLabel(c),0])).keys()].map(v=>({label:v,n:C.filter(c=>ejecVentaLabel(c)===v).length,href:'#/cuentas?dueno='+encodeURIComponent(v=== 'Sin dueño Claro'?'__none__':v)})).sort((a,b)=>b.n-a.n);
  const etapas=ETAPAS.filter(e=>!['Perdida'].includes(e)).map(e=>{const os=D.clientes.flatMap(c=>ofertas(c.id)).filter(o=>o.etapa===e);return {label:e,n:sum(os,o=>o.monto),text:nf.format(os.length)+' · '+nf.format(sum(os,o=>o.monto))};});
  const conv=olas.map(o=>{const cs=C.filter(c=>c.ola===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
  const madOrden=['Sin registrar','Sin presencia','Básica','Media','Alta'];
@@ -227,6 +230,7 @@ function vResumen(){
    kpi(nf.format(fuera),'Fuera de catálogo','kpi-sec')),
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Por jefe'),bars(jefes)),
+   h('div',{class:'card glass'},h('h2',{},'Por ejecutivo de venta (Dueño Claro)'),bars(porDueno,{color:'var(--info)'})),
    h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),
    h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),
    h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa'),bars(etapas,{color:'var(--brand)'})),
@@ -241,20 +245,24 @@ function filtroCuentas(){
  return D.clientes.filter(c=>{
   const p=presencia(c.id);const of=Number(p.oficinas)||0;
   const oficOk=!Q.ofic||(Q.ofic==='0'?of===0:Q.ofic==='1-2'?of>=1&&of<=2:Q.ofic==='3+'?of>=3:true);
-  return (!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||c.jefe===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
+  const duenoOk=!Q.dueno||(Q.dueno==='__none__'?!duenoOf(c):duenoOf(c)===Q.dueno);
+  return (!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||c.jefe===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
    &&(!Q.pres||madurezDe(p)===Q.pres)&&oficOk&&(!Q.pot||potencialDe(p)===Q.pot);
  });
 }
 function vCuentas(){
  const u=(k)=>[...new Set(D.clientes.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ const duenos=[...new Set(D.clientes.map(duenoOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ const duenoOpts=[['__none__','Sin dueño Claro'],...duenos.map(x=>[x,x])];
  const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});
  const draw=()=>{const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
-  out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[4,7,9].includes(i)?'num':''},t)))),
+  out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Ejecutivo venta','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[5,8,10].includes(i)?'num':''},t)))),
   h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);
    return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
     h('td',{},h('span',{class:'chip'},c.ola)),
-    h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},(c.propone||'')+(c.rubro?` · ${c.rubro}`:'')+(c.ventana?` · ${c.ventana}`:'')))),
+    h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},(c.rubro||'')+(c.ventana?` · ${c.ventana}`:'')+(c.propone&&c.propone!==duenoOf(c)?` · Propone: ${c.propone}`:'')))),
     h('td',{},c.jefe||'—'),
+    h('td',{},duenoOf(c)?h('span',{},duenoOf(c)):h('span',{class:'muted'},'Sin dueño Claro')),
     h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier)),
     h('td',{class:'num'},c.score??'n/d'),
     h('td',{},h('span',{class:'chip '+chipMad(mad)},mad)),
@@ -263,15 +271,16 @@ function vCuentas(){
     h('td',{},h('span',{class:'chip '+chipEst(est)},est)),
     h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
  const set=(k)=>(v)=>{Q[k]=v;draw();};
- const activeFilters=[Q.prop,Q.jefe,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot].filter(Boolean).length;
+ const activeFilters=[Q.dueno,Q.prop,Q.jefe,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot].filter(Boolean).length;
  const fl=h('details',{class:'filters-panel',open:!!(Q.q||activeFilters)},
-  h('summary',{},h('span',{},'Filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Buscar y acotar la lista')),
+  h('summary',{},h('span',{},'Filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Jefe, ejecutivo de venta y más')),
   h('div',{class:'filters-top',style:'margin-top:14px'},
    field('Buscar',h('input',{type:'search',placeholder:'Nombre de la empresa',value:Q.q,oninput:e=>{Q.q=e.target.value;draw();}})),
    field('Jefe',sel(u('jefe'),Q.jefe,set('jefe'),{any:'Todos'})),
-   field('Ejecutivo',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'})),
+   field('Ejecutivo de venta',sel(duenoOpts,Q.dueno,set('dueno'),{any:'Todos'})),
    field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'}))),
   h('div',{class:'filters'},
+   field('Propuesto por (equipo)',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'})),
    field('Rubro',sel(u('rubro'),Q.rubro,set('rubro'),{any:'Todos'})),
    field('Tier',sel(['A','B','C','Validar','Pausa'],Q.tier,set('tier'),{any:'Todos'})),
    field('Potencial',sel(['Sin registrar','Bajo','Medio','Alto'],Q.pot,set('pot'),{any:'Todos'})),
@@ -341,8 +350,8 @@ function vCliente(id){
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Ficha'),h('div',{class:'dl'},
      h('p',{},h('span',{class:'muted'},'Jefe'),h('br'),c.jefe||'Sin dato'),
-     h('p',{},h('span',{class:'muted'},'Ejecutivo que la propone'),h('br'),c.propone),
-     h('p',{},h('span',{class:'muted'},'Dueño en Claro'),h('br'),c.dueno||'Sin dato',c.edueno?` (${c.edueno})`:''),
+     h('p',{},h('span',{class:'muted'},'Ejecutivo de venta (Dueño en Claro)'),h('br'),duenoOf(c)||'Sin dueño Claro',c.edueno?` · ${c.edueno}`:''),
+     h('p',{},h('span',{class:'muted'},'Propuesto por el equipo'),h('br'),c.propone||'Sin dato'),
      h('p',{},h('span',{class:'muted'},'Segmento'),h('br'),c.segmento||'—'),h('p',{},h('span',{class:'muted'},'Facturación (L)'),h('br'),c.fact==null?'—':nf.format(c.fact)),
      h('p',{},h('span',{class:'muted'},'Líneas'),h('br'),c.lineas??'—'),h('p',{},h('span',{class:'muted'},'Vencimiento móvil'),h('br'),c.ventana),
      h('p',{},h('span',{class:'muted'},'En Salesforce'),h('br'),c.sf||'—'),h('p',{},h('span',{class:'muted'},'Califica proyecto grande'),h('br'),c.grande||'—')),

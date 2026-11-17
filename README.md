@@ -21,9 +21,9 @@ Seguimiento de cuentas PYME: clientes, tecnologías, ofertas, agenda (.ics), pre
 
 ## Qué incluye
 
-- Resumen con KPIs, **por jefe**, olas, rubros, **presencia digital** y **potencial de compra**
-- Cuentas con filtros (jefe, ejecutivo, presencia, oficinas, potencial)
-- Ficha: playbook, tecnologías, ofertas, notas, **perfil de presencia**, **programar reunión** (hora/duración + .ics + aviso de choques)
+- Resumen con KPIs, **por jefe**, **por ejecutivo de venta (Dueño Claro)**, olas, rubros, presencia y potencial
+- Cuentas: filtros jefe / ejecutivo de venta / propuesto por el equipo
+- Ficha: jefe, dueño Claro (= ejecutivo de venta), propuesto por el equipo, playbook, presencia, reuniones
 - Agenda base + reuniones programadas desde fichas
 - Catálogo Claro / Partner / A la medida (`web/data/medida.json`)
 - Hasta **30 versiones locales** del seguimiento en Ajustes (solo este navegador)
