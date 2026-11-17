@@ -190,6 +190,19 @@ function clashMessages(fecha,hora,durMin,exceptId){
 const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:''};
 const duenoOf=c=>(c.dueno&&String(c.dueno).trim())||'';
 const ejecVentaLabel=c=>duenoOf(c)||'Sin dueño Claro';
+const jefesDisponibles=()=>[...new Set(D.clientes.map(c=>c.jefe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+const conJefe=list=>Q.jefe?list.filter(c=>c.jefe===Q.jefe):list;
+function jefeFilterBar(onPick){
+ const jefes=jefesDisponibles();
+ return h('div',{class:'jefe-bar'},
+  h('span',{class:'jefe-bar-label'},'Jefe'),
+  h('button',{class:'sm'+(Q.jefe?'':' on'),onclick:()=>{Q.jefe='';onPick();}},'Todos'),
+  ...jefes.map(j=>{
+   const n=D.clientes.filter(c=>c.jefe===j).length;
+   return h('button',{class:'sm'+(Q.jefe===j?' on':''),onclick:()=>{Q.jefe=Q.jefe===j?'':j;onPick();}},`${j} · ${n}`);
+  }),
+  !jefes.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null);
+}
 function vResumen(){
  const C=D.clientes,ab=abiertas(),now=new Date();
  const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
@@ -252,22 +265,13 @@ function filtroCuentas(){
 }
 function vCuentas(){
  const u=(k)=>[...new Set(D.clientes.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
- const jefesList=u('jefe');
  const duenos=[...new Set(D.clientes.map(duenoOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
  const duenoOpts=[['__none__','Sin dueño Claro'],...duenos.map(x=>[x,x])];
- const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});const jefeBar=h('div',{class:'jefe-bar'});
+ const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});const jefeSlot=h('div',{});
  const draw=()=>{
   const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));
   cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
-  jefeBar.replaceChildren(
-   h('span',{class:'jefe-bar-label'},'Jefe'),
-   h('button',{class:'sm'+(Q.jefe?'':' on'),onclick:()=>{Q.jefe='';draw();}},'Todos'),
-   ...jefesList.map(j=>{
-    const n=D.clientes.filter(c=>c.jefe===j).length;
-    return h('button',{class:'sm'+(Q.jefe===j?' on':''),onclick:()=>{Q.jefe=Q.jefe===j?'':j;draw();}},`${j} · ${n}`);
-   }),
-   !jefesList.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null
-  );
+  jefeSlot.replaceChildren(jefeFilterBar(draw));
   out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Ejecutivo venta','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[5,8,10].includes(i)?'num':''},t)))),
   h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);
    return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
@@ -302,7 +306,7 @@ function vCuentas(){
    h('div',{style:'display:flex;align-items:end'},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');draw();}},'Limpiar'))));
  draw();return h('div',{class:'view'},
   h('header',{class:'page-head'},h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),h('h1',{},'Cuentas'),cnt),
-  jefeBar,fl,out);}
+  jefeSlot,fl,out);}
 
 function vCliente(id){
  const c=clienteById(id);if(!c)return h('p',{class:'empty'},'No se encontró la cuenta.');
@@ -387,28 +391,43 @@ function vCliente(id){
 }
 
 function vRubros(){
- const rs=[...new Set(D.clientes.map(c=>c.rubro))];
- const items=rs.map(r=>{const cs=D.clientes.filter(c=>c.rubro===r);return {label:r,n:cs.length,href:'#/rubro/'+encodeURIComponent(r),text:`${cs.length} · L ${nf.format(sum(cs,c=>c.fact))}`};}).sort((a,b)=>b.n-a.n);
- return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Rubros'),h('p',{class:'sub'},'Cuentas y facturación por rubro.')),h('div',{class:'card glass'},bars(items,{color:'var(--accent)'})));}
+ const root=h('div',{class:'view'});
+ const draw=()=>{
+  const base=conJefe(D.clientes);
+  const rs=[...new Set(base.map(c=>c.rubro).filter(Boolean))];
+  const items=rs.map(r=>{const cs=base.filter(c=>c.rubro===r);return {label:r,n:cs.length,href:'#/rubro/'+encodeURIComponent(r),text:`${cs.length} · L ${nf.format(sum(cs,c=>c.fact))}`};}).sort((a,b)=>b.n-a.n);
+  root.replaceChildren(
+   h('header',{class:'page-head'},h('h1',{},'Rubros'),h('p',{class:'sub'},Q.jefe?`Filtrado por ${Q.jefe} · ${base.length} cuentas`:'Cuentas y facturación por rubro.')),
+   jefeFilterBar(draw),
+   h('div',{class:'card glass'},items.length?bars(items,{color:'var(--brand)'}):h('p',{class:'empty'},'Sin rubros para este jefe.')));
+ };
+ draw();return root;
+}
 function vRubro(name){
- const cs=D.clientes.filter(c=>c.rubro===name);if(!cs.length)return h('p',{class:'empty'},'Rubro sin cuentas.');
- const pb=D.playbook.find(p=>p.perfil===name)||D.playbook.find(p=>cs.some(c=>c.perfil===p.perfil));
- const ab=cs.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)));
- const pen=KEYS.map(k=>{const t=cs.filter(c=>tiene(c,k.re)).length,o=cs.filter(c=>!tiene(c,k.re)&&conOferta(c,k.re)).length;return {k:k.k,t,o,libre:cs.length-t-o};}).filter(x=>x.t||x.o);
- const rec=KEYS.map(k=>({k:k.k,n:cs.filter(c=>(c.temas||'').split('; ').some(t=>k.re.test(t))).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
- const table=h('div',{class:'wrap glass'},h('table',{},
-  h('thead',{},h('tr',{},['Empresa','Ola','Tier','Facturación (L)','Ofertas'].map((t,i)=>h('th',{class:i>2?'num':''},t)))),
-  h('tbody',{},cs.sort((a,b)=>(b.score??-1)-(a.score??-1)).map(c=>h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
-   h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},c.ola),h('td',{},c.tier),
-   h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),h('td',{class:'num'},ofertas(c.id).length||'—'))))));
- return h('div',{class:'view'},
-  h('a',{class:'back',href:'#/rubros'},'← Rubros'),
-  h('header',{class:'page-head'},h('h1',{},name),h('p',{class:'sub'},`${cs.length} cuentas · Facturación L ${nf.format(sum(cs,c=>c.fact))} · Pipeline abierto L ${nf.format(sum(ab,o=>o.monto))}`)),
-  h('div',{class:'grid cols'},
-   h('div',{class:'card glass'},h('h2',{},'Soluciones sugeridas para este rubro'),bars(rec.map(x=>({label:x.k,n:x.n})),{color:'var(--accent)'})),
-   h('div',{class:'card glass'},h('h2',{},'Penetración registrada'),pen.length?h('ul',{class:'list'},pen.map(p=>h('li',{},h('span',{},p.k),h('span',{class:'muted'},`${p.t} la tienen · ${p.o} con oferta · ${p.libre} libres`)))):h('p',{class:'empty'},'Aún no hay tecnologías ni ofertas en este rubro.'))),
-  pb?h('div',{class:'card glass',style:'margin-bottom:16px'},h('h2',{},'Playbook'),h('div',{class:'dl'},h('p',{},h('h3',{},'Ángulo'),pb.angulo),h('p',{},h('h3',{},'Descubrimiento'),pb.discovery),h('p',{},h('h3',{},'Objeción'),pb.objecion),h('p',{},h('h3',{},'Primer paso'),pb.prueba))):null,
-  table);
+ const root=h('div',{class:'view'});
+ const draw=()=>{
+  const cs=conJefe(D.clientes.filter(c=>c.rubro===name));
+  if(!cs.length){root.replaceChildren(h('a',{class:'back',href:'#/rubros'},'← Rubros'),h('p',{class:'empty'},Q.jefe?`Sin cuentas de este rubro para ${Q.jefe}.`:'Rubro sin cuentas.'),jefeFilterBar(draw));return;}
+  const pb=D.playbook.find(p=>p.perfil===name)||D.playbook.find(p=>cs.some(c=>c.perfil===p.perfil));
+  const ab=cs.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)));
+  const pen=KEYS.map(k=>{const t=cs.filter(c=>tiene(c,k.re)).length,o=cs.filter(c=>!tiene(c,k.re)&&conOferta(c,k.re)).length;return {k:k.k,t,o,libre:cs.length-t-o};}).filter(x=>x.t||x.o);
+  const rec=KEYS.map(k=>({k:k.k,n:cs.filter(c=>(c.temas||'').split('; ').some(t=>k.re.test(t))).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+  const table=h('div',{class:'wrap glass'},h('table',{},
+   h('thead',{},h('tr',{},['Empresa','Jefe','Ola','Tier','Facturación (L)','Ofertas'].map((t,i)=>h('th',{class:i>3?'num':''},t)))),
+   h('tbody',{},cs.sort((a,b)=>(b.score??-1)-(a.score??-1)).map(c=>h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},c.jefe||'—'),h('td',{},c.ola),h('td',{},c.tier),
+    h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),h('td',{class:'num'},ofertas(c.id).length||'—'))))));
+  root.replaceChildren(
+   h('a',{class:'back',href:'#/rubros'},'← Rubros'),
+   h('header',{class:'page-head'},h('h1',{},name),h('p',{class:'sub'},`${cs.length} cuentas${Q.jefe?` · ${Q.jefe}`:''} · Facturación L ${nf.format(sum(cs,c=>c.fact))} · Pipeline abierto L ${nf.format(sum(ab,o=>o.monto))}`)),
+   jefeFilterBar(draw),
+   h('div',{class:'grid cols'},
+    h('div',{class:'card glass'},h('h2',{},'Soluciones sugeridas para este rubro'),bars(rec.map(x=>({label:x.k,n:x.n})),{color:'var(--brand)'})),
+    h('div',{class:'card glass'},h('h2',{},'Penetración registrada'),pen.length?h('ul',{class:'list'},pen.map(p=>h('li',{},h('span',{},p.k),h('span',{class:'muted'},`${p.t} la tienen · ${p.o} con oferta · ${p.libre} libres`)))):h('p',{class:'empty'},'Aún no hay tecnologías ni ofertas en este rubro.'))),
+   pb?h('div',{class:'card glass',style:'margin-bottom:16px'},h('h2',{},'Playbook'),h('div',{class:'dl'},h('p',{},h('h3',{},'Ángulo'),pb.angulo),h('p',{},h('h3',{},'Descubrimiento'),pb.discovery),h('p',{},h('h3',{},'Objeción'),pb.objecion),h('p',{},h('h3',{},'Primer paso'),pb.prueba))):null,
+   table);
+ };
+ draw();return root;
 }
 
 const AQ={tipo:'',prop:'',mes:''};
