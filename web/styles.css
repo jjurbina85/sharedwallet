@@ -79,3 +79,6 @@ svg.i{width:14px;height:14px;flex:none}
 td select{min-width:130px;width:auto}
 td.temas{font-size:12px;color:var(--muted);max-width:340px}
 .cols{align-items:start}
+
+.chip.info{color:var(--fg);border-color:var(--muted);background:transparent}
+input[type=search]{min-width:0;width:100%}

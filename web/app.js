@@ -2,7 +2,7 @@
 const LS_DATA='wallet.data.v1', LS_STATE='wallet.state.v1';
 const ETAPAS=['Prospección','Diagnóstico','Propuesta','Negociación','Ganada','Perdida'];
 const KEYS=[
- {k:'Fortinet',re:/fortinet/i},{k:'WiFi',re:/wi-?fi|meraki/i},{k:'IPTV',re:/iptv/i},
+ {k:'Fortinet',re:/forti/i},{k:'Ciberseguridad gestionada',re:/scitum|\bsoc\b|mdr|edr|vulnerabilidad|ciberseguridad|sase|itdr/i},{k:'WiFi',re:/wi-?fi|meraki/i},{k:'IPTV',re:/iptv/i},
  {k:'PBX y telefonía IP',re:/pbx|telefon|webex|ucaas/i},{k:'WhatsApp Business',re:/whatsapp/i},
  {k:'Mensajería SMS y RCS',re:/\bsms\b|rcs|rbm|mensajer/i},{k:'Desarrollo de software',re:/desarrollo|software/i},
  {k:'Infraestructura y enlaces',re:/infraestructura|enlace|sd-?wan|conectividad|internet dedicado/i},
@@ -36,7 +36,7 @@ function ultimaActividad(c){const ds=[...notas(c.id).map(n=>n.ts),...ofertas(c.i
 const abiertas=()=>D.clientes.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)).map(o=>({...o,cid:c.id})));
 const sum=(a,f)=>a.reduce((s,x)=>s+(Number(f(x))||0),0);
 const chipTier=t=>({A:'ok',B:'',C:'',Validar:'warn',Pausa:'bad'}[t]??'');
-const chipClase=c=>c==='Catálogo Claro'?'ok':c==='Partner'?'warn':'bad';
+const chipClase=c=>c==='Catálogo Claro'?'ok':c==='Partner'?'warn':c==='A la medida'?'info':'bad';
 
 // ---------- componentes ----------
 function bars(items,{href,color}={}){ // items: [{label,n,href?}]
@@ -187,9 +187,24 @@ function vAgenda(){
  return h('div',{},h('h1',{},'Agenda'),stat,h('div',{class:'filters'},field('Tipo',sel(['Cuenta','Tecnología','Presupuesto'],AQ.tipo,set('tipo'),{any:'Todos'})),field('Participante',sel(ps,AQ.prop,set('prop'),{any:'Todos'})),field('Mes',sel(meses,AQ.mes,set('mes'),{any:'Todos'}))),wrap);}
 
 function vCatalogo(){
- let cl='';const wrap=h('div',{class:'wrap'});
- const draw=()=>wrap.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Área','Solución','Clasificación','Producto o partner','Fuente','Nota'].map(t=>h('th',{},t)))),h('tbody',{},D.catalogo.filter(x=>!cl||x.clase===cl).map(x=>h('tr',{},h('td',{},x.area),h('td',{},h('b',{},x.solucion)),h('td',{},h('span',{class:'chip '+chipClase(x.clase)},x.clase)),h('td',{},x.producto),h('td',{class:'muted'},x.fuente),h('td',{class:'muted'},x.nota||'—'))))));
- draw();return h('div',{},h('h1',{},'Catálogo'),h('p',{class:'sub'},'Qué es homologado por Claro, qué viene de partners y qué queda fuera de catálogo.'),h('div',{class:'filters'},field('Clasificación',sel(['Catálogo Claro','Partner','Fuera de catálogo'],'',v=>{cl=v;draw();},{any:'Todas'}))),wrap);}
+ const Qc={clase:'',fam:'',tipo:'',q:''};
+ const wrap=h('div',{class:'wrap'}),count=h('p',{class:'muted',role:'status'});
+ const draw=()=>{
+  const q=Qc.q.trim().toLowerCase();
+  const rows=D.catalogo.filter(x=>(!Qc.clase||x.clase===Qc.clase)&&(!Qc.fam||x.familia===Qc.fam)&&(!Qc.tipo||x.tipo===Qc.tipo)&&(!q||[x.area,x.solucion,x.producto,x.nota,x.familia].join(' ').toLowerCase().includes(q)));
+  count.textContent=`${rows.length} de ${D.catalogo.length} soluciones`;
+  wrap.replaceChildren(rows.length?h('table',{},h('thead',{},h('tr',{},['Área','Solución','Clasificación','Producto o partner','Fuente','Cuándo ofrecerlo'].map(t=>h('th',{},t)))),
+   h('tbody',{},rows.map(x=>h('tr',{},h('td',{},x.familia?h('div',{},h('b',{},x.familia),h('div',{class:'muted'},x.area)):x.area),h('td',{},h('b',{},x.solucion),x.tipo?h('div',{class:'muted'},x.tipo):null),h('td',{},h('span',{class:'chip '+chipClase(x.clase)},x.clase)),h('td',{},x.producto),h('td',{class:'muted'},x.fuente),h('td',{class:'muted'},x.nota||'—'))))):h('p',{class:'empty'},'Ninguna solución coincide con los filtros.'));};
+ const set=k=>v=>{Qc[k]=v;draw();};
+ const med=D.catalogo.filter(x=>x.clase==='A la medida');
+ const fams=[...new Set(med.map(x=>x.familia))],tipos=[...new Set(med.map(x=>x.tipo))];
+ draw();
+ return h('div',{},h('h1',{},'Catálogo'),h('p',{class:'sub'},'Qué es homologado por Claro, qué viene de partners, qué es a la medida (Fortinet, HITSS y Scitum) y qué queda fuera de catálogo.'),
+  h('div',{class:'filters'},field('Clasificación',sel(['Catálogo Claro','Partner','A la medida','Fuera de catálogo'],'',set('clase'),{any:'Todas'})),
+   fams.length?field('Familia a la medida',sel(fams,'',set('fam'),{any:'Todas'})):null,
+   tipos.length?field('Tipo',sel(tipos,'',set('tipo'),{any:'Todos'})):null,
+   field('Buscar',h('input',{type:'search',placeholder:'Ej. FortiGate, SOC, licencia',oninput:e=>{Qc.q=e.target.value;draw();}}))),
+  count,wrap);}
 
 function vAjustes(){
  const readFile=(file,cb)=>{const r=new FileReader();r.onload=()=>{try{cb(JSON.parse(r.result));}catch{toast('El archivo no es un JSON válido');}};r.readAsText(file);};
@@ -221,6 +236,7 @@ async function init(){
  S=loadState();
  try{const raw=localStorage.getItem(LS_DATA);if(raw){D=JSON.parse(raw);DEMO=false;}}catch{}
  if(!D){try{D=await (await fetch('data/demo.json')).json();}catch{$('#main').textContent='No se pudo cargar los datos de demostración.';return;}}
+ try{const med=await (await fetch('data/medida.json')).json();D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida').concat(med);}catch{}
  DEMO=!!(D.meta&&D.meta.demo);
  const b=$('#banner');if(DEMO){b.hidden=false;b.textContent='Estás viendo datos de demostración con cuentas ficticias. Carga tus datos en Ajustes.';}
  window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});route();

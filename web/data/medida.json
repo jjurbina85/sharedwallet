@@ -1,0 +1,862 @@
+[
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiGate (NGFW)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Firewall de nueva generación con aceleración SOC y SD-WAN integrado; hardware, VM y nube",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Base de toda propuesta Fortinet: sucursales, borde de datacenter y segmentación"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiGate VM / nube (AWS, Azure)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "FortiGate virtual para nubes públicas y privadas; se licencia por suscripción o FortiFlex",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Clientes con carga en AWS, Azure o Claro Cloud"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "Secure SD-WAN (FortiGate)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "SD-WAN nativo en FortiGate: priorización de aplicaciones y múltiples enlaces",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Clientes con varias sucursales y más de un enlace"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiSwitch",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Switch de acceso seguro administrado desde FortiGate vía FortiLink",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Renovación de LAN junto con el firewall"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiAP",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Puntos de acceso Wi-Fi gestionables desde FortiCloud o FortiGate",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Proyectos de WiFi empresarial; alternativa a Meraki"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiExtender",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Puente LAN a LTE/5G, respaldo celular para FortiGate",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Sitios sin segundo enlace o con continuidad crítica"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiProxy",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Proxy web seguro con filtrado y protección de contenido",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": ""
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiVoice y FortiFone",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Telefonía IP y PBX unificada con teléfonos Fortinet",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": "Oportunidades de PBX física o cloud con seguridad integrada"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiCamera y FortiRecorder",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Cámaras IP y grabación de video integradas al Security Fabric",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": "Videovigilancia con administración unificada"
+ },
+ {
+  "area": "Redes seguras",
+  "solucion": "FortiTester",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Pruebas de rendimiento y validación de seguridad de red",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": ""
+ },
+ {
+  "area": "Gestión y analítica",
+  "solucion": "FortiManager",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Gestión centralizada de FortiGate, FortiSwitch y FortiAP",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Clientes con tres o más firewalls"
+ },
+ {
+  "area": "Gestión y analítica",
+  "solucion": "FortiAnalyzer",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Centralización de logs, análisis y reportes del Security Fabric",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Cumplimiento y reportes; licencia por GB/día"
+ },
+ {
+  "area": "Gestión y analítica",
+  "solucion": "FortiPortal",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Portal multi-cliente para proveedores de servicios gestionados",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Para operar el servicio como MSSP"
+ },
+ {
+  "area": "Gestión y analítica",
+  "solucion": "FortiGate Cloud y FortiCloud",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Administración y logging en la nube de Fortinet",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": "Sucursales pequeñas sin FortiManager"
+ },
+ {
+  "area": "Gestión y analítica",
+  "solucion": "FortiOS y Security Fabric",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Sistema operativo común y plataforma de integración de todo el portafolio",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Argumento de integración frente a soluciones aisladas"
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiWeb (WAF)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Protección de aplicaciones web y APIs; hardware, VM y SaaS",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Portales, ecommerce y APIs expuestas"
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiADC",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Balanceo de carga de aplicaciones con seguridad (paquetes Network, Application y AI Security)",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Aplicaciones críticas con alta disponibilidad"
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiDDoS",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Mitigación de ataques de denegación de servicio",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": "Servicios publicados en Internet"
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiSASE",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Acceso seguro en la nube para usuarios remotos y sucursales; paquetes Standard, Advanced y Comprehensive",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Trabajo remoto y usuarios móviles"
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiClient (VPN, ZTNA, EPP)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Cliente de endpoint con VPN IPSec/SSL, ZTNA y protección de endpoint",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Aplicaciones y SASE",
+  "solucion": "FortiClient EMS (on-prem y nube)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Consola de administración de FortiClient; paquetes ZTNA/VPN y EPP/ATP",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Acceso e identidad",
+  "solucion": "FortiNAC",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Control de acceso a la red con visibilidad y respuesta automatizada",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Redes con muchos dispositivos IoT o visitantes"
+ },
+ {
+  "area": "Acceso e identidad",
+  "solucion": "FortiAuthenticator",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "SSO, RADIUS, LDAP, SAML, PKI y MFA",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Acceso e identidad",
+  "solucion": "FortiToken",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Autenticación de dos factores con token móvil o de hardware",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Venta de entrada para MFA"
+ },
+ {
+  "area": "Acceso e identidad",
+  "solucion": "FortiPAM",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Gestión de accesos privilegiados",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiSIEM (on-prem y nube)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Correlación de eventos y gestión de riesgo multifabricante",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Base para SOC propio o gestionado"
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiSOAR",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Orquestación, automatización y respuesta para SOC",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiEDR",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Protección y respuesta automatizada en endpoints, TI y OT",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiNDR",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Detección y respuesta de red con IA",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiSandbox",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Detección de malware de día cero en entornos virtuales",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiDeceptor",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Engaño con señuelos y honeypots",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiRecon",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Monitoreo de superficie de ataque externa y riesgo digital",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiMail",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Seguridad de correo: antispam, antiphishing y protección de adjuntos",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Clientes con correo propio o híbrido"
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiMonitor",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Monitoreo de experiencia digital y rendimiento",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": ""
+ },
+ {
+  "area": "Operaciones de seguridad",
+  "solucion": "FortiCNAPP",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Producto",
+  "producto": "Protección de aplicaciones y cargas nativas de nube",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiCare Premium",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Soporte técnico del fabricante con reemplazo de hardware (RMA) y actualizaciones",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Mínimo recomendable en toda venta de hardware"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiCare Elite",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Nivel superior de soporte con atención prioritaria",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Clientes con operación crítica 7x24"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiCare Essentials",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Soporte de nivel básico para equipos pequeños",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks. Validar composición vigente con Fortinet o el mayorista",
+  "nota": "Sucursales pequeñas"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "Bundle FortiGuard Enterprise Protection (ENT)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Paquete completo de servicios FortiGuard con FortiCare Premium; el más amplio de los tres",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Propuesta completa de seguridad"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "Bundle FortiGuard Unified Threat Protection (UTP)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Paquete intermedio de servicios FortiGuard de seguridad unificada",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Estándar para PYME mediana"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "Bundle FortiGuard Advanced Threat Protection (ATP)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Paquete de entrada con protección contra amenazas avanzadas",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Oferta de entrada para PYME"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiGuard servicios individuales",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "IPS, antivirus, control de aplicaciones, filtrado web, DNS, antispam, IoT Detection, Industrial Security y sandbox en la nube, contratables por separado (a la carta)",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Cuando el cliente solo necesita un servicio"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiFlex (licenciamiento flexible)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Puntos de consumo prepago o postpago para VM, FortiWeb, FortiMail, FortiADC, FortiSASE, FortiSIEM y más",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": "Cargas variables y modelo de servicio gestionado"
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiSASE Standard, Advanced y Comprehensive",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Suscripción por usuario con ancho de banda, IPs dedicadas y ubicaciones SD-WAN On-Ramp; plazo mínimo 90 días con FortiFlex",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiAnalyzer licencia por GB/día",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Suscripción por volumen diario de logs, con FortiCare Premium e IOC",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiManager licencia por dispositivos",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Suscripción por dispositivos administrados y ADOMs",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiClient licencias (ZTNA, VPN, EPP)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Licencias por endpoint según paquete: ZTNA/VPN o EPP/ATP + ZTNA/VPN",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiWeb bundles (Standard, Advanced, Enterprise)",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "Paquetes de servicios para FortiWeb VM y FortiWeb Cloud por rendimiento y aplicaciones",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Soporte y licencias",
+  "solucion": "FortiToken licencias móviles y de hardware",
+  "clase": "A la medida",
+  "familia": "Fortinet",
+  "tipo": "Licencia",
+  "producto": "OTP por usuario en app móvil o token físico",
+  "fuente": "Fortinet: docs.fortinet.com (FortiFlex 25.2, familias) y guía de producto Exclusive Networks",
+  "nota": ""
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Desarrollo de software a la medida",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Software para industrias clave, enfocado en automatizar procesos",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Aplicaciones propias del cliente, integraciones y portales"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Hiperautomatización",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "RPA, inteligencia artificial y low-code para operaciones más ágiles",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Procesos manuales repetitivos en finanzas y operaciones"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Omnicanalidad",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Experiencias unificadas en todos los canales de contacto",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Combina con WhatsApp Business y mensajería segmentada"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "IoT y Edge",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Conexión de dispositivos y datos en tiempo real",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Agro, manufactura y flota"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "ERP (Centro de Excelencia)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Integración de procesos clave en ERP con apoyo de un CoE",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Cuentas con SAP u otros ERP; ver propuesta SAP Hondupalma"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "CRM (Centro de Excelencia)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Gestión de relaciones con clientes con apoyo de un CoE",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Cuentas con Salesforce"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Servicios de nube multicloud",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Gestión integral multicloud: operación, seguridad y agilidad",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Migraciones y operación en Azure, AWS u Oracle"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "AMS, ITO y observabilidad",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Administración y evolución de aplicaciones críticas con automatización",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Soporte continuo de aplicaciones"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Aseguramiento de calidad (QA)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Pruebas con IA y automatización",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Acompaña proyectos de software y ERP"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Datos e información, IA",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Gestión y análisis de datos como activo estratégico",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Analítica, tableros y modelos"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Conectividad integral (Telco)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Redes y tecnología para proyectos escalables de transformación digital",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Une la oferta de enlaces de Claro con proyectos de TI"
+ },
+ {
+  "area": "Prácticas",
+  "solucion": "Ciberseguridad (Scitum)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Práctica",
+  "producto": "Protección integral y ciberseguridad estratégica alineada a estándares",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": "Ver bloque Scitum"
+ },
+ {
+  "area": "Consultoría",
+  "solucion": "Design Thinking e ideación",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Consultoría",
+  "producto": "Soluciones centradas en el usuario para acelerar ciclos de desarrollo",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Consultoría",
+  "solucion": "Transformación digital",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Consultoría",
+  "producto": "Operaciones ágiles e inteligentes combinando tecnología, procesos y cultura",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Consultoría",
+  "solucion": "Experiencia del cliente",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Consultoría",
+  "producto": "Diseño y mejora de interacciones para aumentar satisfacción y fidelidad",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Consultoría",
+  "solucion": "Optimización de negocio",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Consultoría",
+  "producto": "Mejora de eficiencia de procesos para cumplir objetivos estratégicos",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Consultoría",
+  "solucion": "Adopción de IA",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Consultoría",
+  "producto": "Acompañamiento estratégico para maximizar impacto y retorno",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Productos y plataformas",
+  "solucion": "Agentes de IA (HITSS AI agents con Happy Robot)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Producto",
+  "producto": "Fuerza laboral de IA que automatiza llamadas, correos, OCR y actualizaciones a escala",
+  "fuente": "hitss.com/practicas, /consultoria y /; dplnews.com",
+  "nota": "Call center y cobranza"
+ },
+ {
+  "area": "Productos y plataformas",
+  "solucion": "Ecosistemas digitales",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Producto",
+  "producto": "Plataformas tecnológicas integradas y escalables que optimizan procesos",
+  "fuente": "hitss.com/practicas, /consultoria y /",
+  "nota": ""
+ },
+ {
+  "area": "Productos y plataformas",
+  "solucion": "Productos digitales transversales",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Producto",
+  "producto": "Soluciones para un problema específico que cualquier industria puede adoptar",
+  "fuente": "hitss.com/practicas, /consultoria y //productosdigitales",
+  "nota": "El detalle de cada producto no aparece en la página pública; pedir el listado a HITSS"
+ },
+ {
+  "area": "Productos y plataformas",
+  "solucion": "Productos digitales por industria",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Producto",
+  "producto": "Soluciones especializadas: agro, salud, manufactura, retail, smart communities, banca y hospitalidad",
+  "fuente": "hitss.com/practicas, /consultoria y //productosdigitales",
+  "nota": "Pedir el listado a HITSS"
+ },
+ {
+  "area": "Productos y plataformas",
+  "solucion": "Centro de Excelencia en minería (IA, gemelos digitales y drones)",
+  "clase": "A la medida",
+  "familia": "HITSS",
+  "tipo": "Producto",
+  "producto": "Estimación de inventarios, vigilancia y analítica con drones autónomos",
+  "fuente": "df.cl (estrategia de Claro Empresas)",
+  "nota": "Minería y recursos naturales; validar si aplica en Honduras"
+ },
+ {
+  "area": "Seguridad perimetral y acceso",
+  "solucion": "SPAi Conexión (seguridad perimetral administrada)",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Firewall y VPN, o paquete UTM con IPS, filtrado web, antivirus, antispam y control de aplicaciones; 15 a 200 usuarios, 7x24 con SOC",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "PYME con sucursales; contratos de 12, 36 o 60 meses"
+ },
+ {
+  "area": "Seguridad perimetral y acceso",
+  "solucion": "SPA SDWAN (seguridad perimetral con SD-WAN)",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Firewall, VPN, UTM y SD-WAN gestionado; hasta 600 usuarios y enlaces de 10 a 1,000 Mbps",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Edificios corporativos, datacenters y sucursales de alto impacto"
+ },
+ {
+  "area": "Seguridad perimetral y acceso",
+  "solucion": "SASE Scitum Usuarios",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Filtrado web, control de aplicaciones, VPN remota e integración con Active Directory para usuarios móviles; operación 7x24",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Usuarios remotos; retención de 30 días de eventos"
+ },
+ {
+  "area": "Protección y detección",
+  "solucion": "Protección al Endpoint",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Antivirus y antispyware con firewall, IPS y control de aplicaciones opcionales; consola central para Windows, Mac y Linux",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": ""
+ },
+ {
+  "area": "Protección y detección",
+  "solucion": "Protección de identidades (ITDR)",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Diagnóstico y protección de Active Directory y monitoreo de acceso condicional, sobre SentinelOne",
+  "fuente": "Comunicado Scitum y SentinelOne (businesswire.com)",
+  "nota": "Empresas con Active Directory"
+ },
+ {
+  "area": "Protección y detección",
+  "solucion": "Seguridad en Bases de Datos",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Diagnóstico, implementación y operación administrada de seguridad de bases de datos; modalidad modular o a la medida",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Auditoría y datos sensibles"
+ },
+ {
+  "area": "Protección y detección",
+  "solucion": "Ciberseguridad en la Nube",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "CSPM, gestión de accesos privilegiados, MFA, NGFW, WAF, anti-DDoS, CASB, protección de cargas, DevSecOps, SASE y cumplimiento",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Clientes en Azure, AWS o Claro Cloud"
+ },
+ {
+  "area": "Protección y detección",
+  "solucion": "Ciberseguridad para Tecnologías Operacionales (OT)",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Inventario y visibilidad de activos, evaluación de riesgo (NIST 800-82, IEC 62443), monitoreo, pruebas de penetración y concientización",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Manufactura, energía y salud"
+ },
+ {
+  "area": "Pruebas y gestión de vulnerabilidades",
+  "solucion": "Análisis de Vulnerabilidades desde la Nube (AVN)",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Escaneos externos e internos de 1 a 12 eventos al año, con reporte técnico y ejecutivo; mínimo 50 activos",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Venta de entrada para cumplimiento"
+ },
+ {
+  "area": "Pruebas y gestión de vulnerabilidades",
+  "solucion": "Seguridad Aplicativa: análisis de vulnerabilidades",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Identifica debilidades de las aplicaciones según buenas prácticas de la industria",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": "Cuentas con desarrollo de software propio"
+ },
+ {
+  "area": "Pruebas y gestión de vulnerabilidades",
+  "solucion": "Seguridad Aplicativa: revisión de código fuente",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Detecta vulnerabilidades según el lenguaje de programación",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": ""
+ },
+ {
+  "area": "Pruebas y gestión de vulnerabilidades",
+  "solucion": "Seguridad Aplicativa: ciclo de desarrollo seguro",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Modelo de madurez de desarrollo seguro en todo el ciclo de vida: gobierno, construcción, verificación e implementación",
+  "fuente": "Fichas técnicas Telmex-Scitum (downloads.telmex.com)",
+  "nota": ""
+ },
+ {
+  "area": "Operación y consultoría",
+  "solucion": "Consultoría en ciberseguridad",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Consultoría",
+  "producto": "Enfoque estratégico para reducir riesgos, cubre el ciclo completo de ciberseguridad",
+  "fuente": "Comunicados Scitum (itsitio.com, businesswire.com)",
+  "nota": ""
+ },
+ {
+  "area": "Operación y consultoría",
+  "solucion": "Centros de operaciones de seguridad (SOC) y servicios administrados",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Monitoreo, detección y administración de seguridad 7x24 desde los SOC de Scitum",
+  "fuente": "Comunicados Scitum (itsitio.com) y fichas Telmex-Scitum",
+  "nota": "Base de cualquier servicio gestionado"
+ },
+ {
+  "area": "Operación y consultoría",
+  "solucion": "Respuesta a incidentes",
+  "clase": "A la medida",
+  "familia": "Scitum",
+  "tipo": "Servicio",
+  "producto": "Atención de incidentes integrada al modelo de servicios administrados",
+  "fuente": "Comunicado Scitum y SentinelOne (businesswire.com)",
+  "nota": ""
+ }
+]

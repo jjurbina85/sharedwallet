@@ -17,3 +17,7 @@ En el navegador (localStorage). Cada persona tiene su copia. Para pasarla a otra
 
 ## Siguiente fase
 API en Go con base de datos (SQLite o Postgres) y login con Microsoft, para que el equipo comparta el seguimiento. `main.go` ya tiene el lugar para las rutas `/api`.
+
+## Soluciones a la medida
+
+`web/data/medida.json` contiene Fortinet (productos y licencias), HITSS y Scitum. Se agrega al catálogo al cargar, también cuando usas tus datos reales. Para editar o agregar, modifica ese archivo.
