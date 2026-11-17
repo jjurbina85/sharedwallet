@@ -1,23 +1,41 @@
 # Wallet Preventa Honduras
 
-Seguimiento de cuentas PYME: clientes, tecnologías que tienen, ofertas, agenda con descarga de calendario (.ics) e indicadores. Sitio estático en JavaScript, sin dependencias.
+Seguimiento de cuentas PYME: clientes, tecnologías, ofertas, agenda (.ics), presencia digital, potencial de compra e indicadores. Sitio estático en JavaScript, sin dependencias. Se publica con **GitHub Pages**.
 
 ## Publicar en GitHub Pages
-1. Crea un repositorio (privado) y sube estos archivos.
-2. En Settings > Pages, elige "GitHub Actions" como origen.
-3. Cada push a `main` publica la carpeta `web/`.
 
-Importante: GitHub Pages es público aunque el repositorio sea privado (el acceso privado a Pages solo existe en Enterprise Cloud). Por eso el sitio trae solo **datos de demostración** con cuentas ficticias. Los datos reales (facturación de Claro) se cargan desde Ajustes en el navegador de cada persona y no se suben al repositorio. `datos-wallet-claro.json` está en `.gitignore`.
+1. Settings → Pages → origen **GitHub Actions**.
+2. Cada push a `main` publica la carpeta `web/` (workflow `.github/workflows/pages.yml`).
 
-## Cómo se guarda el seguimiento
-En el navegador (localStorage). Cada persona tiene su copia. Para pasarla a otra persona: Ajustes > Descargar respaldo / Importar respaldo.
+**Importante:** Pages es público aunque el repo sea privado. El sitio solo lleva **datos de demostración**. La facturación real de Claro **no** va al repositorio.
+
+## Cómo carga data el equipo
+
+1. Cada persona abre el sitio de Pages.
+2. Va a **Ajustes → Cargar datos de cuentas** y sube `datos-wallet-claro.json` (archivo local / canal interno).
+3. La cartera queda en el **navegador** (`localStorage`), no en GitHub.
+4. Opcional: poner el **nombre** en Ajustes para etiquetar notas, ofertas y reuniones.
+5. Para pasar seguimiento a otra persona: **Descargar / Importar respaldo**.
+
+`datos-wallet-claro.json` está en `.gitignore`. Hay copia de seguridad local recomendada fuera del repo.
+
+## Qué incluye
+
+- Resumen con KPIs, olas, rubros, **presencia digital** y **potencial de compra**
+- Cuentas con filtros (incluye presencia, oficinas, potencial)
+- Ficha: playbook, tecnologías, ofertas, notas, **perfil de presencia**, **programar reunión** (hora/duración + .ics + aviso de choques)
+- Agenda base + reuniones programadas desde fichas
+- Catálogo Claro / Partner / A la medida (`web/data/medida.json`)
+- Hasta **30 versiones locales** del seguimiento en Ajustes (solo este navegador)
 
 ## Ejecutar en local
-`go run .` y abre http://localhost:8080 (o abre `web/index.html` con cualquier servidor estático).
 
-## Siguiente fase
-API en Go con base de datos (SQLite o Postgres) y login con Microsoft, para que el equipo comparta el seguimiento. `main.go` ya tiene el lugar para las rutas `/api`.
+```bash
+go run .
+```
 
-## Soluciones a la medida
+Abre http://localhost:8080 (o abre `web/` con cualquier servidor estático).
 
-`web/data/medida.json` contiene Fortinet (productos y licencias), HITSS y Scitum. Se agrega al catálogo al cargar, también cuando usas tus datos reales. Para editar o agregar, modifica ese archivo.
+## Fuera de alcance ahora
+
+Servidor compartido (Docker, API, claves por persona, sync cada 20s) queda para cuando haya VPS. Hoy todo es GitHub Pages + navegador.
