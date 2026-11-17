@@ -279,11 +279,19 @@ const SENAL_EMPUJES={
  multisede:['Secure SD-WAN (FortiGate)','Cisco, Scitum, NetScout y Tenable'],
  app:['WhatsApp Business','Desarrollo de software a la medida']
 };
+const OLAS=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'];
 function duenoOf(c){
  const map=st('duenos');
  if(Object.prototype.hasOwnProperty.call(map,c.id))return String(map[c.id]||'').trim();
  return (c.dueno&&String(c.dueno).trim())||'';
 }
+function olaOf(c){
+ if(!c)return '';
+ const map=st('olas');
+ if(Object.prototype.hasOwnProperty.call(map,c.id))return String(map[c.id]||'').trim()||(c.ola||'');
+ return (c.ola&&String(c.ola).trim())||'';
+}
+const olaOverride=c=>Object.prototype.hasOwnProperty.call(st('olas'),c.id);
 const ejecVentaLabel=c=>duenoOf(c)||'Sin dueño Claro';
 const asesorActivo=c=>duenoOf(c)||(c.propone&&String(c.propone).trim())||'';
 function jefeOf(c){
@@ -375,7 +383,7 @@ function montoPonderado(c){
 function pipelinePonderado(list){return sum(list,montoPonderado);}
 function clasificarCuenta(c){
  const minF=getMinFact();
- const ola1=c.ola==='Ola 1';
+ const ola1=olaOf(c)==='Ola 1';
  if(!minF)return{status:'bloqueado',reasons:['Sin umbral de facturación'],protegidoOla1:false};
  if(estado(c)==='En pausa')return{status:'en_pausa',reasons:['En pausa'],protegidoOla1:false};
  const pot=potencialDe(presencia(c.id));
@@ -435,7 +443,7 @@ function confirmarPausaCuenta(c){
 function filtroEmbudoBase(){
  let L=conJefe(D.clientes);
  if(E.rubro)L=L.filter(c=>c.rubro===E.rubro);
- if(E.ola)L=L.filter(c=>c.ola===E.ola);
+ if(E.ola)L=L.filter(c=>olaOf(c)===E.ola);
  if(E.vent)L=L.filter(c=>c.ventana===E.vent);
  return L;
 }
@@ -475,7 +483,7 @@ function vResumen(){
   const hechas=ag.filter(e=>(st('agenda')[e.id]||{}).hecha).length;
   const venc=C.filter(c=>['Vencido','Este mes','1-3 meses'].includes(c.ventana)).length;
   const sinAct=C.filter(c=>{const u=ultimaActividad(c);return !u||(now-u)/864e5>30;}).length;
-  const ola1=C.filter(c=>c.ola==='Ola 1').length;
+  const ola1=C.filter(c=>olaOf(c)==='Ola 1').length;
   const sinDueno=C.filter(c=>!duenoOf(c)).length;
   const minF=getMinFact();
   const sobreMin=minF?C.filter(c=>factOf(c)>=minF).length:null;
@@ -483,12 +491,12 @@ function vResumen(){
   const aplicanN=minF?C.filter(c=>clasificarCuenta(c).status==='aplica').length:null;
   const porJefe=[...new Map(C.map(c=>[jefeOf(c)||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(jefeOf(c)||'Sin dato')===v).length}));
   const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
-  const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
+  const olas=OLAS.map(o=>({label:o,n:C.filter(c=>olaOf(c)===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
   const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
   const jefes=porJefe.sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),text:`${x.n} · L ${nf.format(sum(C.filter(c=>(jefeOf(c)||'Sin dato')===x.label),factOf))}`,color:x.label==='Sin dato'?undefined:'var(--brand)'}));
   const porDueno=[...new Map(C.map(c=>[ejecVentaLabel(c),0])).keys()].map(v=>({label:v,n:C.filter(c=>ejecVentaLabel(c)===v).length,href:'#/cuentas?dueno='+encodeURIComponent(v==='Sin dueño Claro'?'__none__':v)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):'')})).sort((a,b)=>b.n-a.n);
   const etapas=ETAPAS.filter(e=>!['Perdida'].includes(e)).map(e=>{const os=C.flatMap(c=>ofertas(c.id)).filter(o=>o.etapa===e);return {label:e,n:sum(os,o=>o.monto),text:nf.format(os.length)+' · '+nf.format(sum(os,o=>o.monto))};});
-  const conv=olas.map(o=>{const cs=C.filter(c=>c.ola===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
+  const conv=olas.map(o=>{const cs=C.filter(c=>olaOf(c)===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
   const madOrden=['Sin registrar','Sin presencia','Básica','Media','Alta'];
   const potOrden=['Sin registrar','Bajo','Medio','Alto'];
   const madBars=madOrden.map(l=>({label:l,n:C.filter(c=>madurezDe(presencia(c.id))===l).length,href:'#/cuentas?pres='+encodeURIComponent(l)})).filter(x=>x.n);
@@ -506,7 +514,7 @@ function vResumen(){
   const hoy=now.toISOString().slice(0,10);let nx=prox.filter(x=>x.slot>=hoy).slice(0,6);const futuro=nx.length>0;if(!nx.length)nx=prox.slice(0,6);
   const jefeCards=jefesDisponibles().map(j=>{
    const cs=D.clientes.filter(c=>jefeOf(c)===j);
-   const o1=cs.filter(c=>c.ola==='Ola 1').length;
+   const o1=cs.filter(c=>olaOf(c)==='Ola 1').length;
    const cont=cs.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
    const active=Q.jefe===j;
    return h('button',{class:'card glass jefe-kpi'+(active?' on':''),title:`Filtrar el tablero por el equipo de ${j}`,onclick:()=>{Q.jefe=active?'':j;draw();}},
@@ -572,7 +580,7 @@ function filtroCuentas(){
   const oficOk=!Q.ofic||(Q.ofic==='0'?of===0:Q.ofic==='1-2'?of>=1&&of<=2:Q.ofic==='3+'?of>=3:true);
   const duenoOk=!Q.dueno||(Q.dueno==='__none__'?!duenoOf(c):duenoOf(c)===Q.dueno);
   const factOk=!m||!Q.factBand||(Q.factBand==='sobre'?factOf(c)>=m:factOf(c)<m);
-  return factOk&&(!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||jefeOf(c)===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
+  return factOk&&(!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||jefeOf(c)===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||olaOf(c)===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
    &&(!Q.pres||madurezDe(p)===Q.pres)&&oficOk&&(!Q.pot||potencialDe(p)===Q.pot);
  });
 }
@@ -590,7 +598,7 @@ function vCuentas(){
   out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Ejecutivo venta','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[5,8,10].includes(i)?'num':''},t)))),
   h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);const sobre=m&&factOf(c)>=m;
    return h('tr',{class:'link'+(sobre?' row-sobre':''),onclick:()=>{location.hash='#/cliente/'+c.id;}},
-    h('td',{},h('span',{class:'chip'},c.ola)),
+    h('td',{},h('span',{class:'chip'},olaOf(c)||'—')),
     h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},(c.rubro||'')+(c.ventana?` · ${c.ventana}`:'')+(c.propone&&c.propone!==duenoOf(c)?` · Propone: ${c.propone}`:'')))),
     h('td',{},jefeOf(c)||'—'),
     h('td',{},duenoOf(c)?h('span',{},duenoOf(c)):h('span',{class:'muted'},'Sin dueño Claro')),
@@ -608,7 +616,7 @@ function vCuentas(){
   h('div',{class:'filters-top',style:'margin-top:14px'},
    field('Buscar',h('input',{type:'search',placeholder:'Nombre de la empresa',value:Q.q,oninput:e=>{Q.q=e.target.value;draw();}})),
    field('Ejecutivo de venta',sel(duenoOpts,Q.dueno,set('dueno'),{any:'Todos'})),
-   field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'})),
+   field('Ola',sel(OLAS,Q.ola,set('ola'),{any:'Todas'})),
    field('Propuesto por (equipo)',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'}))),
   h('div',{class:'filters'},
    field('Rubro',sel(u('rubro'),Q.rubro,set('rubro'),{any:'Todos'})),
@@ -774,7 +782,7 @@ function vCliente(id){
   return cant!=null&&cant!==''?`${tiene} · ~${cant}`:tiene;
  })();
  const fijoResumen=nFijoOk?`Sí · ${nFijoOk} con Claro`:(ck.fijo.tiene==='no'?'No':ck.fijo.tiene==='si'?'Sí':'n/d');
- return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${c.ola} · Tier ${c.tier} · Score ${c.score??'n/d'}`),
+ return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${olaOf(c)||'Sin ola'} · Tier ${c.tier} · Score ${c.score??'n/d'}`),
   h('p',{class:'row',style:'margin-top:8px'},
    h('span',{class:'chip '+chipKpi('movil')},`Móvil: ${movilResumen}`),
    h('span',{class:'chip '+chipKpi('fijo')},`Fijos: ${fijoResumen}`),
@@ -791,7 +799,14 @@ function vCliente(id){
      h('p',{},h('span',{class:'muted'},'En Salesforce'),h('br'),c.sf||'—'),h('p',{},h('span',{class:'muted'},'Califica proyecto grande'),h('br'),c.grande||'—')),
      factForm,
      c.alerta?h('p',{},h('span',{class:'chip bad'},c.alerta)):null,
-     h('div',{class:'form'},field('Estado de gestión',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],estado(c),v=>{st('estados')[id]=v;saveState();toast('Estado guardado');})))),
+     h('div',{class:'form'},
+      field('Ola de ataque',sel(OLAS,olaOf(c),v=>{
+       if(!v||v===(c.ola||'')){delete st('olas')[id];}
+       else st('olas')[id]=v;
+       saveState();toast(`Ola: ${v||c.ola||'—'}`);rerender();
+      },{label:'Ola de ataque'})),
+      field('Estado de gestión',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],estado(c),v=>{st('estados')[id]=v;saveState();toast('Estado guardado');}))),
+     olaOverride(c)?h('p',{class:'muted'},`Ola local (antes en cartera: ${c.ola||'—'}). ` ,h('button',{class:'sm',onclick:()=>{delete st('olas')[id];saveState();toast('Ola de cartera restaurada');rerender();}},'Usar ola de cartera')):null),
    h('div',{class:'card glass'},h('h2',{},'Cómo atacarla'),h('div',{class:'dl'},
      h('p',{},h('h3',{},'Ángulo'),c.angulo),h('p',{},h('h3',{},'Solución ancla'),c.ancla),h('p',{},h('h3',{},'Disparador'),c.disparador),h('p',{},h('h3',{},'Apertura'),c.apertura),
      h('p',{},h('h3',{},'Preguntas de descubrimiento'),c.discovery),h('p',{},h('h3',{},'Objeción probable'),c.objecion),h('p',{},h('h3',{},'Primer paso'),c.prueba),h('p',{},h('h3',{},'Siguiente paso'),c.siguiente)))),
@@ -855,7 +870,7 @@ function vRubro(name){
   const table=h('div',{class:'wrap glass'},h('table',{},
    h('thead',{},h('tr',{},['Empresa','Jefe','Ola','Tier','Facturación (L)','Ofertas'].map((t,i)=>h('th',{class:i>3?'num':''},t)))),
    h('tbody',{},cs.sort((a,b)=>(b.score??-1)-(a.score??-1)).map(c=>h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
-    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},jefeOf(c)||'—'),h('td',{},c.ola),h('td',{},c.tier),
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},jefeOf(c)||'—'),h('td',{},olaOf(c)||'—'),h('td',{},c.tier),
     h('td',{class:'num'},factRaw(c)==null?'—':nf.format(factOf(c))),h('td',{class:'num'},ofertas(c.id).length||'—'))))));
   root.replaceChildren(
    h('a',{class:'back',href:'#/rubros'},'← Rubros'),
@@ -994,7 +1009,7 @@ function vAjustes(){
    h('div',{class:'card glass'},h('h2',{},'Cargar datos de cuentas'),h('p',{class:'muted'},'Archivo local con clientes, catálogo, playbook y agenda. Nunca al repositorio.'),
     dropzone(f=>readJsonFile(f,applyCartera)),
     h('p',{class:'row',style:'margin-top:12px'},h('button',{onclick:()=>{localStorage.removeItem(LS_DATA);location.reload();}},'Volver a demostración'))),
-   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Incluye tecnologías, ofertas, notas, estados, agenda, presencia, reuniones, ejecutivo, jefe por asesor, facturación, señales y KPIs Claro (móvil / SVA / fijos).'),
+   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Incluye tecnologías, ofertas, notas, estados, olas, agenda, presencia, reuniones, ejecutivo, jefe por asesor, facturación, señales y KPIs Claro (móvil / SVA / fijos).'),
     h('p',{class:'row'},h('button',{class:'primary',onclick:()=>download('seguimiento-wallet.json',JSON.stringify(S,null,1),'application/json')},'Descargar respaldo'),
      h('label',{class:'btn'},'Importar respaldo',h('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:e=>{const f=e.target.files[0];if(f)readJsonFile(f,j=>{S=j;saveState({backup:false});toast('Respaldo importado');route();});}}))),
     h('p',{},h('button',{class:'danger',onclick:()=>{if(!S._conf){S._conf=1;toast('Toca otra vez para borrar todo el seguimiento');setTimeout(()=>delete S._conf,3000);return;}S={};saveState({backup:false});toast('Seguimiento borrado');route();}},'Borrar seguimiento'))),
@@ -1045,7 +1060,7 @@ function vEmbudo(){
    const pot=potencialDe(presencia(c.id));
    const pondC=montoPonderado(c);
    return h('tr',{class:'embudo-row'},
-    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},c.ola||'—')),
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},olaOf(c)||'—')),
     h('td',{},c.rubro||'—'),
     h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier||'—')),
     h('td',{class:'num'},c.score??'n/d'),
@@ -1062,7 +1077,7 @@ function vEmbudo(){
     delete pauseConf[c.id];confirmarPausaCuenta(c);draw();
    }},'Confirmar Pausa'):h('span',{class:'muted'},'Archivada');
    return h('tr',{class:'embudo-row dim'},
-    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},(cl.reasons||[]).join(' · ')||c.ola)),
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa),h('div',{class:'muted meta'},(cl.reasons||[]).join(' · ')||olaOf(c))),
     h('td',{},c.rubro||'—'),
     h('td',{},chipCl(cl)),
     h('td',{},btn));
@@ -1097,7 +1112,7 @@ function vEmbudo(){
    h('div',{class:'card glass embudo-controls'},
     h('div',{class:'filters filters-top'},
      field('Rubro',sel(rubros,E.rubro,v=>{E.rubro=v;draw();},{any:'Todos',label:'Rubro'})),
-     field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],E.ola,v=>{E.ola=v;draw();},{any:'Todas',label:'Ola'})),
+     field('Ola',sel(OLAS,E.ola,v=>{E.ola=v;draw();},{any:'Todas',label:'Ola'})),
      field('Ventana',sel(ventanas,E.vent,v=>{E.vent=v;draw();},{any:'Todas',label:'Ventana'}))),
     h('div',{class:'row embudo-actions'},
      h('label',{class:'toggle'},
