@@ -121,6 +121,10 @@ h3{font-size:12px;font-weight:600;margin:0 0 4px;color:var(--muted);text-transfo
 .kpi-claro-col h3{margin:0 0 8px;font-size:14px;font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .kpi-claro-col .form{margin-top:8px}
 .list.compact li{padding:7px 0;font-size:13px}
+.kpi-check-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.kpi-check-list.scroll{max-height:280px;overflow:auto;padding-right:4px;border:1px solid var(--line);border-radius:12px;padding:10px}
+.kpi-check-row{display:grid;grid-template-columns:1fr minmax(72px,88px);gap:8px;align-items:center}
+.kpi-check-row select{min-height:34px;font-size:12px}
 @media (max-width:960px){.kpi-claro-grid{grid-template-columns:1fr}}
 
 .bar{

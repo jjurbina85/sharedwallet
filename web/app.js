@@ -764,16 +764,12 @@ function vCliente(id){
   const cant=ck.movil.cant||c.lineas;
   return cant!=null&&cant!==''?`${tiene} · ~${cant}`:tiene;
  })();
- const fijoResumen=(()=>{
-  const tiene=ck.fijo.tiene==='si'?'Sí':ck.fijo.tiene==='no'?'No':'n/d';
-  const parts=[ck.fijo.internet&&`Int: ${ck.fijo.internet}`,ck.fijo.did&&`DID: ${ck.fijo.did}`,ck.fijo.mpls&&`MPLS: ${ck.fijo.mpls}`].filter(Boolean);
-  return parts.length?`${tiene} · ${parts.join(' · ')}`:tiene;
- })();
+ const fijoResumen=nFijoOk?`Sí · ${nFijoOk} con Claro`:(ck.fijo.tiene==='no'?'No':ck.fijo.tiene==='si'?'Sí':'n/d');
  return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${c.ola} · Tier ${c.tier} · Score ${c.score??'n/d'}`),
   h('p',{class:'row',style:'margin-top:8px'},
    h('span',{class:'chip '+chipKpi('movil')},`Móvil: ${movilResumen}`),
    h('span',{class:'chip '+chipKpi('fijo')},`Fijos: ${fijoResumen}`),
-   h('span',{class:'chip '+chipKpi('sva')},`SVA: ${svaTiene.length} registrados`))),
+   h('span',{class:'chip '+chipKpi('sva')},`SVA: ${nSvaOk} con Claro`))),
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Ficha'),h('div',{class:'dl'},
      h('p',{},h('span',{class:'muted'},'Jefe'),h('br'),jefeOf(c)||'Sin dato',asesorActivo(c)&&jefeOf(c)!==c.jefe?h('span',{class:'muted'},` · según asesor ${asesorActivo(c)}`):null),
