@@ -51,7 +51,7 @@
       "discovery": "¿Tamaño de flota? ¿Cómo controlan rutas, combustible y entregas? ¿Siniestros o robos?",
       "objecion": "Ya tenemos GPS. Comparar costo y reportes, y sumar video a bordo.",
       "prueba": "Piloto de 10 unidades con reporte de rutas y combustible.",
-      "temas": "WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (notificaciones de entrega); PBX en la nube [Partner: Webex]; Desarrollo de software (seguimiento de entregas) [Partner: servicios profesionales]; Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (notificaciones de entrega); PBX en la nube [Partner: Webex]; Desarrollo de software (seguimiento de entregas) [Partner: servicios profesionales]; Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "reunion": "2026-11-20 09:00",
       "jefe": "Selvin Guillén"
     },
@@ -99,7 +99,7 @@
       "discovery": "¿Cuántas sucursales y bodegas? ¿Cómo se cuadra caja y se controla merma? ¿Qué ERP usan y quién lo mantiene? ¿Caídas de internet en punto de venta?",
       "objecion": "Ya tenemos cámaras. Responder con analítica (conteo, merma, colas) sobre las cámaras que ya tienen y un piloto en una sucursal.",
       "prueba": "Piloto de video analítico en 1 sucursal con medición de merma o colas antes y después.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "reunion": "2026-11-20 11:00",
       "jefe": "Lenin García"
     },
@@ -147,7 +147,7 @@
       "discovery": "¿Cómo registran clientes y pipeline? ¿Requisitos regulatorios de seguridad? ¿Sucursales y enlaces?",
       "objecion": "Regulación y procesos largos. Empezar por infraestructura.",
       "prueba": "Diagnóstico de seguridad y enlaces.",
-      "temas": "Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura y enlaces [Catálogo: conectividad y SD-WAN]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (cobranza y servicio); Desarrollo de software [Partner: servicios profesionales]",
+      "temas": "Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura y enlaces [Catálogo: conectividad y SD-WAN]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (cobranza y servicio); Desarrollo de software [Partner: servicios profesionales]",
       "reunion": "2026-11-23 09:00",
       "jefe": "Junior Hernández"
     },
@@ -195,7 +195,7 @@
       "discovery": "¿Qué marcas revenden? ¿Cuántos proyectos al año? ¿Quién les da soporte?",
       "objecion": "Ya trabajan con otro proveedor. Ofrecer registro de oportunidades y soporte compartido.",
       "prueba": "Reunión de alianza y primer proyecto conjunto.",
-      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Fuera de catálogo] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
+      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Catálogo Claro] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
       "reunion": "2026-11-23 11:00",
       "jefe": "Luis González"
     },
@@ -291,7 +291,7 @@
       "discovery": "¿Cuántas sucursales y bodegas? ¿Cómo se cuadra caja y se controla merma? ¿Qué ERP usan y quién lo mantiene? ¿Caídas de internet en punto de venta?",
       "objecion": "Ya tenemos cámaras. Responder con analítica (conteo, merma, colas) sobre las cámaras que ya tienen y un piloto en una sucursal.",
       "prueba": "Piloto de video analítico en 1 sucursal con medición de merma o colas antes y después.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "reunion": "2026-11-24 11:00",
       "jefe": "Lenin García"
     },
@@ -339,7 +339,7 @@
       "discovery": "¿Cuántas sucursales y bodegas? ¿Cómo se cuadra caja y se controla merma? ¿Qué ERP usan y quién lo mantiene? ¿Caídas de internet en punto de venta?",
       "objecion": "Ya tenemos cámaras. Responder con analítica (conteo, merma, colas) sobre las cámaras que ya tienen y un piloto en una sucursal.",
       "prueba": "Piloto de video analítico en 1 sucursal con medición de merma o colas antes y después.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "reunion": "2026-11-25 09:00",
       "jefe": "Junior Hernández"
     },
@@ -387,7 +387,7 @@
       "discovery": "¿Cómo registran cotizaciones y reservas? ¿Cuántos agentes? ¿Canales de venta?",
       "objecion": "Son pocos usuarios. Empezar con paquete estándar.",
       "prueba": "Paquete de internet dedicado y telefonía IP.",
-      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
+      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
       "reunion": "2026-11-25 11:00",
       "jefe": "Luis González"
     },
@@ -435,7 +435,7 @@
       "discovery": "¿Cuántas obras o sitios activos? ¿Cómo comunican la obra con oficina? ¿Robos o incidentes?",
       "objecion": "Sitios temporales. Ofrecer enlaces móviles por proyecto.",
       "prueba": "Video perimetral en una obra.",
-      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "reunion": "2026-11-26 09:00",
       "jefe": "Selvin Guillén"
     },
@@ -483,7 +483,7 @@
       "discovery": "¿Cómo registran cotizaciones y reservas? ¿Cuántos agentes? ¿Canales de venta?",
       "objecion": "Son pocos usuarios. Empezar con paquete estándar.",
       "prueba": "Paquete de internet dedicado y telefonía IP.",
-      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
+      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
       "reunion": "2026-11-26 11:00",
       "jefe": "Lenin García"
     },
@@ -531,7 +531,7 @@
       "discovery": "¿Cuántas obras o sitios activos? ¿Cómo comunican la obra con oficina? ¿Robos o incidentes?",
       "objecion": "Sitios temporales. Ofrecer enlaces móviles por proyecto.",
       "prueba": "Video perimetral en una obra.",
-      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "reunion": "2026-11-27 09:00",
       "jefe": "Junior Hernández"
     },
@@ -579,7 +579,7 @@
       "discovery": "¿Habitaciones y áreas comunes? ¿Quejas de Wi-Fi? ¿Cámaras actuales y quién las monitorea? ¿Cómo gestionan reservas directas?",
       "objecion": "Temporada baja y poco presupuesto. Responder con piloto por fases y pago mensual.",
       "prueba": "Diagnóstico de cobertura Wi-Fi y de puntos ciegos de video en un área.",
-      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Fuera de catálogo] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "reunion": "2026-11-27 11:00",
       "jefe": "Luis González"
     },
@@ -627,7 +627,7 @@
       "discovery": "¿Hectáreas o volumen de producción? ¿Cómo registran cosecha y costos? ¿ERP actual? ¿Exportan y qué certificaciones piden?",
       "objecion": "No hay señal en finca. Resolver primero la conectividad y luego el piloto.",
       "prueba": "Piloto SmartCultivo en un lote con datos de campo.",
-      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Fuera de catálogo, validar]",
+      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
       "reunion": "2026-11-30 09:00",
       "jefe": "Selvin Guillén"
     },
@@ -675,7 +675,7 @@
       "discovery": "¿Qué marcas revenden? ¿Cuántos proyectos al año? ¿Quién les da soporte?",
       "objecion": "Ya trabajan con otro proveedor. Ofrecer registro de oportunidades y soporte compartido.",
       "prueba": "Reunión de alianza y primer proyecto conjunto.",
-      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Fuera de catálogo] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
+      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Catálogo Claro] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
       "reunion": "2026-11-30 11:00",
       "jefe": "Selvin Guillén"
     }
@@ -812,10 +812,10 @@
     {
       "area": "Cercanía al cliente",
       "solucion": "WhatsApp Business",
-      "clase": "Fuera de catálogo",
-      "producto": "Posible vía Aldeamo o Chat2B",
-      "fuente": "No aparece en las láminas",
-      "nota": "Aldeamo está como partner de Apps. Validar si habilita WhatsApp Business"
+      "clase": "Catálogo Claro",
+      "producto": "WhatsApp Business",
+      "fuente": "Catálogo Claro",
+      "nota": "Solución del catálogo Claro (WhatsApp Business)."
     },
     {
       "area": "Productividad",
@@ -852,10 +852,10 @@
     {
       "area": "Video y TV",
       "solucion": "IPTV",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Requiere solución especial"
+      "clase": "Catálogo Claro",
+      "producto": "IPTV",
+      "fuente": "Catálogo Claro",
+      "nota": "Solución del catálogo Claro (IPTV)."
     },
     {
       "area": "Video y TV",
@@ -994,7 +994,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo B + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (notificaciones de entrega); PBX en la nube [Partner: Webex]; Desarrollo de software (seguimiento de entregas) [Partner: servicios profesionales]; Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (notificaciones de entrega); PBX en la nube [Partner: Webex]; Desarrollo de software (seguimiento de entregas) [Partner: servicios profesionales]; Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "nota": "",
       "opciones": "2026-11-20 09:00|2026-11-20 11:00|2026-11-20 16:00"
     },
@@ -1008,7 +1008,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo C + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-20 09:00|2026-11-20 11:00|2026-11-20 16:00"
     },
@@ -1036,7 +1036,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo D + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura y enlaces [Catálogo: conectividad y SD-WAN]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (cobranza y servicio); Desarrollo de software [Partner: servicios profesionales]",
+      "temas": "Fortinet y seguridad [Partner: Fortinet]; Renovación de infraestructura y enlaces [Catálogo: conectividad y SD-WAN]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] (cobranza y servicio); Desarrollo de software [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-23 09:00|2026-11-23 11:00|2026-11-23 16:00"
     },
@@ -1050,7 +1050,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo A + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Fuera de catálogo] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
+      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Catálogo Claro] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-23 09:00|2026-11-23 11:00|2026-11-23 16:00"
     },
@@ -1078,7 +1078,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo C + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-24 09:00|2026-11-24 11:00|2026-11-24 16:00"
     },
@@ -1106,7 +1106,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo D + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
+      "temas": "Renovación de infraestructura y enlaces de sucursales [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad perimetral [Partner: Fortinet]; WiFi para tienda y bodega [Partner: Cisco Meraki, validar]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM] a clientes; PBX en la nube [Partner: Webex]; Desarrollo de software (POS, pedidos, integraciones) [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-25 09:00|2026-11-25 11:00|2026-11-25 16:00"
     },
@@ -1120,7 +1120,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo A + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
+      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-25 09:00|2026-11-25 11:00|2026-11-25 16:00"
     },
@@ -1134,7 +1134,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo B + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "nota": "",
       "opciones": "2026-11-26 09:00|2026-11-26 11:00|2026-11-26 16:00"
     },
@@ -1148,7 +1148,7 @@
       "ola": "Pausa",
       "participantes": "Ejecutivo C + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
+      "temas": "PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro] y mensajería segmentada [Catálogo: SMS Broadcast, RBM]; Internet dedicado y renovación de infraestructura [Catálogo: conectividad y SD-WAN]; Desarrollo de software (reservas y cotizador) [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-26 09:00|2026-11-26 11:00|2026-11-26 16:00"
     },
@@ -1176,7 +1176,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo D + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "Conectividad de obras y sitios [Catálogo: conectividad y SD-WAN]; Fortinet y acceso remoto [Partner: Fortinet]; PBX en la nube [Partner: Webex]; WhatsApp Business [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "nota": "",
       "opciones": "2026-11-27 09:00|2026-11-27 11:00|2026-11-27 16:00"
     },
@@ -1190,7 +1190,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo A + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Fuera de catálogo] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Fuera de catálogo, validar]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "nota": "",
       "opciones": "2026-11-27 09:00|2026-11-27 11:00|2026-11-27 16:00"
     },
@@ -1218,7 +1218,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo B + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Fuera de catálogo, validar]",
+      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
       "nota": "",
       "opciones": "2026-11-30 09:00|2026-11-30 11:00|2026-11-30 16:00"
     },
@@ -1232,7 +1232,7 @@
       "ola": "Ola 2",
       "participantes": "Ejecutivo C + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Fuera de catálogo] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
+      "temas": "Alianza de canal: Fortinet [Partner: Fortinet]; WiFi e IPTV [Catálogo Claro] para reventa; PBX en la nube [Partner: Webex]; Mensajería y WhatsApp Business para sus clientes; Desarrollo de software a medida [Partner: servicios profesionales]",
       "nota": "",
       "opciones": "2026-11-30 09:00|2026-11-30 11:00|2026-11-30 16:00"
     },
