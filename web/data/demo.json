@@ -243,7 +243,7 @@
       "discovery": "¿Qué ERP usan? ¿Cómo controlan producción y costos? ¿Cuántos empleados y cómo calculan nómina? ¿Paros por red?",
       "objecion": "Ya tenemos ERP. Descubrir carencias reales (costos, nómina, trazabilidad) antes de proponer cambio.",
       "prueba": "Diagnóstico de red y video de planta.",
-      "temas": "Renovación de infraestructura de planta [Catálogo: conectividad y SD-WAN]; Fortinet y segmentación de red [Partner: Fortinet]; WiFi industrial [Partner: Cisco Meraki, validar]; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Desarrollo de software e integraciones [Partner: servicios profesionales]; Mensajería segmentada a personal [Catálogo: SMS Broadcast, RBM]",
+      "temas": "Renovación de infraestructura de planta [Catálogo: conectividad y SD-WAN]; Fortinet y segmentación de red [Partner: Fortinet]; WiFi industrial [Partner: Cisco Meraki, validar]; PBX en la nube o física [Nube: Partner Webex. Física: a la medida]; Desarrollo de software e integraciones [Partner: servicios profesionales]; Mensajería segmentada a personal [Catálogo: SMS Broadcast, RBM]",
       "reunion": "2026-11-24 09:00",
       "jefe": "Selvin Guillén"
     },
@@ -579,7 +579,7 @@
       "discovery": "¿Habitaciones y áreas comunes? ¿Quejas de Wi-Fi? ¿Cámaras actuales y quién las monitorea? ¿Cómo gestionan reservas directas?",
       "objecion": "Temporada baja y poco presupuesto. Responder con piloto por fases y pago mensual.",
       "prueba": "Diagnóstico de cobertura Wi-Fi y de puntos ciegos de video en un área.",
-      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: a la medida]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "reunion": "2026-11-27 11:00",
       "jefe": "Luis González"
     },
@@ -627,7 +627,7 @@
       "discovery": "¿Hectáreas o volumen de producción? ¿Cómo registran cosecha y costos? ¿ERP actual? ¿Exportan y qué certificaciones piden?",
       "objecion": "No hay señal en finca. Resolver primero la conectividad y luego el piloto.",
       "prueba": "Piloto SmartCultivo en un lote con datos de campo.",
-      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
+      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [A la medida]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
       "reunion": "2026-11-30 09:00",
       "jefe": "Selvin Guillén"
     },
@@ -787,14 +787,6 @@
     },
     {
       "area": "Comunicación",
-      "solucion": "PBX física",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Validar con producto o con un partner"
-    },
-    {
-      "area": "Comunicación",
       "solucion": "Chat2B, chatbots, cobranza inteligente y Págalo",
       "clase": "Catálogo Claro",
       "producto": "Chat2B y chatbots, Cobranza inteligente, Págalo",
@@ -856,38 +848,6 @@
       "producto": "IPTV",
       "fuente": "Catálogo Claro",
       "nota": "Solución del catálogo Claro (IPTV)."
-    },
-    {
-      "area": "Video y TV",
-      "solucion": "Video analítica",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Validar si Data y analítica o IoT lo cubren"
-    },
-    {
-      "area": "Aplicaciones",
-      "solucion": "Salesforce",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Validar vía servicios profesionales"
-    },
-    {
-      "area": "Aplicaciones",
-      "solucion": "Nómina y capital humano (HCM)",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Validar vía servicios profesionales"
-    },
-    {
-      "area": "Aplicaciones",
-      "solucion": "SmartCultivo",
-      "clase": "Fuera de catálogo",
-      "producto": "Sin producto en las láminas",
-      "fuente": "No aparece en las láminas",
-      "nota": "Requiere solución especial"
     }
   ],
   "playbook": [
@@ -1064,7 +1024,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo B + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Renovación de infraestructura de planta [Catálogo: conectividad y SD-WAN]; Fortinet y segmentación de red [Partner: Fortinet]; WiFi industrial [Partner: Cisco Meraki, validar]; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Desarrollo de software e integraciones [Partner: servicios profesionales]; Mensajería segmentada a personal [Catálogo: SMS Broadcast, RBM]",
+      "temas": "Renovación de infraestructura de planta [Catálogo: conectividad y SD-WAN]; Fortinet y segmentación de red [Partner: Fortinet]; WiFi industrial [Partner: Cisco Meraki, validar]; PBX en la nube o física [Nube: Partner Webex. Física: a la medida]; Desarrollo de software e integraciones [Partner: servicios profesionales]; Mensajería segmentada a personal [Catálogo: SMS Broadcast, RBM]",
       "nota": "",
       "opciones": "2026-11-24 09:00|2026-11-24 11:00|2026-11-24 16:00"
     },
@@ -1190,7 +1150,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo A + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: fuera de catálogo]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
+      "temas": "WiFi para huéspedes y áreas comunes [Partner: Cisco Meraki, validar]; IPTV [Catálogo Claro] en habitaciones; PBX en la nube o física [Nube: Partner Webex. Física: a la medida]; Fortinet y seguridad [Partner: Fortinet]; WhatsApp Business para reservas [Catálogo Claro]; Renovación de infraestructura [Catálogo: conectividad y SD-WAN]",
       "nota": "",
       "opciones": "2026-11-27 09:00|2026-11-27 11:00|2026-11-27 16:00"
     },
@@ -1218,7 +1178,7 @@
       "ola": "Ola 1",
       "participantes": "Ejecutivo B + Jorge Urbina",
       "objetivo": "Revisar presupuesto de TI 2027 y evaluar tecnologías, incluido lo fuera del catálogo homologado.",
-      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [Fuera de catálogo, validar]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
+      "temas": "Conectividad y renovación de infraestructura en planta y finca [Catálogo: conectividad y SD-WAN]; Fortinet y seguridad [Partner: Fortinet]; WiFi en planta [Partner: Cisco Meraki, validar]; PBX física [A la medida]; Desarrollo de software (trazabilidad, integración con ERP) [Partner: servicios profesionales]; WhatsApp Business con proveedores [Catálogo Claro]",
       "nota": "",
       "opciones": "2026-11-30 09:00|2026-11-30 11:00|2026-11-30 16:00"
     },
