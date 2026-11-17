@@ -673,7 +673,10 @@ function vCliente(id){
  const fijoCat=catalogoPorKpi('fijo');
  const svaCat=catalogoPorKpi('sva').filter(x=>!/forticare|fortiguard|fortiflex|licencia/i.test(x.solucion+x.tipo));
  const nFijoOk=countConNosotros(ck,'fijo');
- const nSvaOk=countConNosotros(ck,'sva');
+ const nSvaOk=svaCat.filter(x=>{
+  const keyed=Object.prototype.hasOwnProperty.call(ck.sva.items,x.solucion);
+  return keyed?!!ck.sva.items[x.solucion]:techTieneSolucion(c,x.solucion);
+ }).length;
  const asesores=asesoresConocidos();
  const duenoOpts=[['', 'Sin dueño Claro'],...asesores.map(a=>[a,a])];
  if(duenoOf(c)&&!asesores.includes(duenoOf(c)))duenoOpts.push([duenoOf(c),duenoOf(c)]);
@@ -702,12 +705,18 @@ function vCliente(id){
    on?sel(cant5,cantVal,v=>{ck.fijo.cants[x.solucion]=v;saveState();},{label:'Cant. '+x.solucion}):h('span',{class:'muted'},'—'));
  };
  const checkSvaRow=x=>{
-  const on=conNosotrosSva(ck,x.solucion)||techTieneSolucion(c,x.solucion);
+  const keyed=Object.prototype.hasOwnProperty.call(ck.sva.items,x.solucion);
+  const on=keyed?!!ck.sva.items[x.solucion]:techTieneSolucion(c,x.solucion);
   return h('label',{class:'check'},
    h('input',{type:'checkbox',checked:on,onchange:e=>{
-    ck.sva.items[x.solucion]=!!e.target.checked;
-    if(e.target.checked&&!techTieneSolucion(c,x.solucion)){
+    const yes=!!e.target.checked;
+    ck.sva.items[x.solucion]=yes;
+    if(yes&&!techTieneSolucion(c,x.solucion)){
      (st('tech')[id]=st('tech')[id]||[]).unshift({tema:x.solucion,proveedor:'Claro',vence:'',id:uid(),...stamp()});
+    }
+    if(!yes){
+     const re=new RegExp(String(x.solucion).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');
+     st('tech')[id]=(st('tech')[id]||[]).filter(t=>!re.test(`${t.tema}`));
     }
     saveState();rerender();
    }}),
