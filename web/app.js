@@ -252,10 +252,22 @@ function filtroCuentas(){
 }
 function vCuentas(){
  const u=(k)=>[...new Set(D.clientes.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+ const jefesList=u('jefe');
  const duenos=[...new Set(D.clientes.map(duenoOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
  const duenoOpts=[['__none__','Sin dueño Claro'],...duenos.map(x=>[x,x])];
- const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});
- const draw=()=>{const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
+ const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});const jefeBar=h('div',{class:'jefe-bar'});
+ const draw=()=>{
+  const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));
+  cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
+  jefeBar.replaceChildren(
+   h('span',{class:'jefe-bar-label'},'Jefe'),
+   h('button',{class:'sm'+(Q.jefe?'':' on'),onclick:()=>{Q.jefe='';draw();}},'Todos'),
+   ...jefesList.map(j=>{
+    const n=D.clientes.filter(c=>c.jefe===j).length;
+    return h('button',{class:'sm'+(Q.jefe===j?' on':''),onclick:()=>{Q.jefe=Q.jefe===j?'':j;draw();}},`${j} · ${n}`);
+   }),
+   !jefesList.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null
+  );
   out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Ejecutivo venta','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[5,8,10].includes(i)?'num':''},t)))),
   h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);
    return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
@@ -272,15 +284,14 @@ function vCuentas(){
     h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
  const set=(k)=>(v)=>{Q[k]=v;draw();};
  const activeFilters=[Q.dueno,Q.prop,Q.jefe,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot].filter(Boolean).length;
- const fl=h('details',{class:'filters-panel',open:!!(Q.q||activeFilters)},
-  h('summary',{},h('span',{},'Filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Jefe, ejecutivo de venta y más')),
+ const fl=h('details',{class:'filters-panel',open:true},
+  h('summary',{},h('span',{},'Más filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Ejecutivo, ola, rubro…')),
   h('div',{class:'filters-top',style:'margin-top:14px'},
    field('Buscar',h('input',{type:'search',placeholder:'Nombre de la empresa',value:Q.q,oninput:e=>{Q.q=e.target.value;draw();}})),
-   field('Jefe',sel(u('jefe'),Q.jefe,set('jefe'),{any:'Todos'})),
    field('Ejecutivo de venta',sel(duenoOpts,Q.dueno,set('dueno'),{any:'Todos'})),
-   field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'}))),
+   field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'})),
+   field('Propuesto por (equipo)',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'}))),
   h('div',{class:'filters'},
-   field('Propuesto por (equipo)',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'})),
    field('Rubro',sel(u('rubro'),Q.rubro,set('rubro'),{any:'Todos'})),
    field('Tier',sel(['A','B','C','Validar','Pausa'],Q.tier,set('tier'),{any:'Todos'})),
    field('Potencial',sel(['Sin registrar','Bajo','Medio','Alto'],Q.pot,set('pot'),{any:'Todos'})),
@@ -288,10 +299,10 @@ function vCuentas(){
    field('Estado',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],Q.estado,set('estado'),{any:'Todos'})),
    field('Presencia',sel(['Sin registrar','Sin presencia','Básica','Media','Alta'],Q.pres,set('pres'),{any:'Todas'})),
    field('Oficinas',sel([['0','Ninguna'],['1-2','1 o 2'],['3+','3 o más']],Q.ofic,set('ofic'),{any:'Todas'})),
-   h('div',{style:'display:flex;align-items:end'},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');route();}},'Limpiar'))));
+   h('div',{style:'display:flex;align-items:end'},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');draw();}},'Limpiar'))));
  draw();return h('div',{class:'view'},
   h('header',{class:'page-head'},h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),h('h1',{},'Cuentas'),cnt),
-  fl,out);}
+  jefeBar,fl,out);}
 
 function vCliente(id){
  const c=clienteById(id);if(!c)return h('p',{class:'empty'},'No se encontró la cuenta.');
