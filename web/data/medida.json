@@ -867,7 +867,27 @@
     "clase": "A la medida",
     "producto": "Sin producto en las láminas",
     "fuente": "Equipo preventa",
-    "nota": "Validar con producto o con un partner (reclasificada desde fuera de catálogo)"
+    "nota": "Clasificación A la medida (equipo preventa)"
+  },
+  {
+    "area": "Cercanía al cliente",
+    "familia": "Otras a la medida",
+    "tipo": "Solución a la medida",
+    "solucion": "WhatsApp Business",
+    "clase": "A la medida",
+    "producto": "WhatsApp Business",
+    "fuente": "Equipo preventa",
+    "nota": "Clasificación A la medida (antes Catálogo Claro)"
+  },
+  {
+    "area": "Video y TV",
+    "familia": "Otras a la medida",
+    "tipo": "Solución a la medida",
+    "solucion": "IPTV",
+    "clase": "A la medida",
+    "producto": "IPTV",
+    "fuente": "Equipo preventa",
+    "nota": "Clasificación A la medida (antes Catálogo Claro)"
   },
   {
     "area": "Video y TV",
@@ -877,7 +897,7 @@
     "clase": "A la medida",
     "producto": "Sin producto en las láminas",
     "fuente": "Equipo preventa",
-    "nota": "Validar si Data y analítica o IoT lo cubren (reclasificada desde fuera de catálogo)"
+    "nota": "Clasificación A la medida (equipo preventa)"
   },
   {
     "area": "Aplicaciones",
@@ -887,7 +907,7 @@
     "clase": "A la medida",
     "producto": "Sin producto en las láminas",
     "fuente": "Equipo preventa",
-    "nota": "Validar vía servicios profesionales (reclasificada desde fuera de catálogo)"
+    "nota": "Clasificación A la medida (equipo preventa)"
   },
   {
     "area": "Aplicaciones",
@@ -897,7 +917,7 @@
     "clase": "A la medida",
     "producto": "Sin producto en las láminas",
     "fuente": "Equipo preventa",
-    "nota": "Validar vía servicios profesionales (reclasificada desde fuera de catálogo)"
+    "nota": "Clasificación A la medida (equipo preventa)"
   },
   {
     "area": "Aplicaciones",
@@ -907,6 +927,6 @@
     "clase": "A la medida",
     "producto": "Sin producto en las láminas",
     "fuente": "Equipo preventa",
-    "nota": "Requiere solución especial (reclasificada desde fuera de catálogo)"
+    "nota": "Clasificación A la medida (equipo preventa)"
   }
 ]

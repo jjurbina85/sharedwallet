@@ -784,7 +784,11 @@ async function init(){
  S=loadState();
  try{const raw=localStorage.getItem(LS_DATA);if(raw){D=JSON.parse(raw);DEMO=false;}}catch{}
  if(!D){try{D=await (await fetch('data/demo.json')).json();}catch{$('#main').textContent='No se pudo cargar los datos de demostración.';return;}}
- try{const med=await (await fetch('data/medida.json')).json();D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida').concat(med);}catch{}
+ try{
+  const med=await (await fetch('data/medida.json')).json();
+  const fuerzaMedida=new Set(med.map(x=>x.solucion));
+  D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida'&&!fuerzaMedida.has(x.solucion)).concat(med);
+ }catch{}
  const ensureHitss=[
   {area:'ERP',solucion:'SAP S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Lámina de partners',nota:'Vía Global HITSS (ej. Hondupalma)'},
   {area:'ERP',solucion:'Migración SAP ECC → S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Partner HITSS',nota:'Migración ECC 6.0 a S/4HANA con Global HITSS'}
