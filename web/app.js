@@ -533,7 +533,7 @@ function vResumen(){
     h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),
     h('h1',{},'Resumen'),
     h('p',{class:'sub'},Q.jefe?`${Q.jefe} · ${C.length} cuentas · Corte ${D.meta.corte}`:`${D.clientes.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`),
-    h('p',{class:'board-legend'},'Cada tarjeta incluye una lectura gerencial: qué mide y para qué sirve al revisar la cartera.')),
+    h('p',{class:'board-legend'},'Lectura gerencial por tarjeta: qué mide y para qué sirve.')),
    jefeFilterBar(draw),
    factFilterBar(draw),
    h('div',{class:'grid kpis-hero'},
@@ -556,18 +556,18 @@ function vResumen(){
     kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec','Sin notas, ofertas ni tecnologías registradas en 30 días. Requiere reactivación.'),
     kpi(`${hechas}/${ag.length||0}`,'Reuniones hechas','kpi-sec','De la agenda base, cuántas ya se marcaron como realizadas.')),
    h('div',{class:'grid cols-2'},
-    chartCard('Por jefe','Distribución de cuentas (y facturación en la barra) por jefe. Identifica concentración de cartera.',bars(jefes)),
-    chartCard('Por ola de ataque','Priorización comercial: Ola 1 primero, luego 2/3, Validar y Pausa.',bars(olas)),
-    chartCard('Por rubro','Concentración por industria. Útil para empujar soluciones típicas del rubro.',bars(rub)),
-    chartCard('Por ejecutivo de venta','Ownership Claro: quién es dueño de la cuenta en preventa.',bars(porDueno,{color:'var(--info)'})),
-    chartCard('Pipeline por etapa','Monto y cantidad de ofertas abiertas por etapa del ciclo de venta.',bars(etapas,{color:'var(--brand)'})),
-    chartCard('Cuentas con oferta por ola','% de cuentas de cada ola que ya tienen al menos una oferta cargada.',bars(conv,{color:'var(--ok)'})),
-    chartCard('Presencia digital','Madurez digital registrada (web, oficinas, correo, app). Alimenta sugerencias.',bars(madBars,{color:'var(--info)'})),
-    chartCard('Potencial de compra','Estimación de oportunidad según presencia. Alto = priorizar diagnóstico.',bars(potBars))),
+    chartCard('Por jefe','Concentración de cartera por jefe de equipo.',bars(jefes,{color:'var(--brand)'})),
+    chartCard('Por ola','Prioridad: Ola 1 primero, luego 2/3, Validar y Pausa.',bars(olas,{color:'var(--fg)'})),
+    chartCard('Por rubro','Industria: guía de soluciones típicas.',bars(rub,{color:'var(--muted)'})),
+    chartCard('Por ejecutivo','Ownership Claro de cada cuenta.',bars(porDueno,{color:'var(--info)'})),
+    chartCard('Pipeline por etapa','Ofertas abiertas por etapa del ciclo.',bars(etapas,{color:'var(--brand)'})),
+    chartCard('Oferta por ola','% de cuentas con al menos una oferta.',bars(conv,{color:'var(--ok)'})),
+    chartCard('Presencia digital','Madurez registrada (web, oficinas, correo, app).',bars(madBars,{color:'var(--info)'})),
+    chartCard('Potencial de compra','Oportunidad según presencia digital.',bars(potBars,{color:'var(--warn)'}))),
    h('div',{class:'card glass'},
     h('h2',{},futuro?'Próximas reuniones confirmadas':'Reuniones confirmadas'),
-    h('p',{class:'card-hint'},'Solo estado Confirmado (no Bloqueo). Agenda operativa para seguimiento de la semana.'),
-    h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones confirmadas en este recorte')))));
+    h('p',{class:'card-hint'},'Solo Confirmado. Agenda de la semana.'),
+    h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones confirmadas')))));
  };
 
  draw();return root;
@@ -732,7 +732,7 @@ function vCliente(id){
  };
  const kpiClaroCard=h('div',{class:'card glass kpi-claro-card'},
   h('h2',{},'KPIs Claro'),
-  h('p',{class:'card-hint'},'Marca qué ya tiene con Claro. Cantidades de 5 en 5. SVA es el KPI prioritario del equipo.'),
+  h('p',{class:'card-hint'},'Qué ya tiene con Claro. Cantidades de 5 en 5. SVA es el KPI prioritario.'),
   h('div',{class:'grid kpi-claro-grid'},
    h('div',{class:'kpi-claro-col'},
     h('h3',{},h('span',{class:'chip '+chipKpi('movil')},'Móvil'),' Líneas móviles'),
