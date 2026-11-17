@@ -57,7 +57,23 @@ const abiertas=()=>D.clientes.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Per
 const sum=(a,f)=>a.reduce((s,x)=>s+(Number(f(x))||0),0);
 const chipTier=t=>({A:'ok',B:'',C:'',Validar:'warn',Pausa:'bad'}[t]??'');
 const chipClase=c=>c==='Catálogo Claro'?'ok':c==='Partner'?'warn':c==='A la medida'?'info':'bad';
+const chipMad=m=>({Alta:'ok',Media:'info',Básica:'warn','Sin presencia':'bad','Sin registrar':'muted'}[m]||'muted');
+const chipPot=p=>({Alto:'ok',Medio:'warn',Bajo:'bad','Sin registrar':'muted'}[p]||'muted');
+const chipEst=e=>{
+ if(['Ganada'].includes(e))return 'ok';
+ if(['Negociación','Propuesta','Diagnóstico','Contactado','En pipeline (Jorge)'].includes(e))return 'info';
+ if(['Por contactar','Por validar'].includes(e))return 'warn';
+ if(['Perdida','En pausa'].includes(e))return 'bad';
+ return 'muted';
+};
 const byline=x=>x&& (x.by||x.ts)?` · ${[x.by,x.ts&&fdate(x.ts.slice(0,10))].filter(Boolean).join(' · ')}`:'';
+function applyCartera(j){
+ if(!Array.isArray(j.clientes)||!Array.isArray(j.agenda)||!Array.isArray(j.catalogo)){toast('Faltan clientes, catálogo o agenda');return false;}
+ try{localStorage.setItem(LS_DATA,JSON.stringify(j));}catch{toast('El archivo es muy grande para este navegador');return false;}
+ toast(`Datos cargados · ${j.clientes.length} cuentas`);
+ setTimeout(()=>location.reload(),500);
+ return true;
+}
 
 // ---------- presencia digital ----------
 function madurezDe(p){
@@ -108,9 +124,22 @@ function bars(items,{href,color}={}){
  const mx=Math.max(1,...items.map(i=>i.n));
  if(!items.length)return h('p',{class:'empty'},'Sin datos todavía.');
  return h('div',{},items.map(i=>{const a=h(i.href?'a':'div',{class:'bar',href:i.href},h('span',{},i.label),h('div',{class:'t'},h('i',{style:`width:${100*i.n/mx}%;--bc:${i.color||color||'var(--muted)'}`})),h('span',{class:'n'},i.text??nf.format(i.n)));return a;}));}
-const kpi=(v,l)=>h('div',{class:'card kpi glass'},h('b',{},v),h('span',{},l));
+const kpi=(v,l,cls='')=>h('div',{class:`card kpi glass ${cls}`.trim()},h('b',{},v),h('span',{},l));
 function sel(opts,val,onchange,{label,id,any}={}){const s=h('select',{id,'aria-label':label||''},any!=null?h('option',{value:''},any):null,opts.map(o=>{const [v,t]=Array.isArray(o)?o:[o,o];return h('option',{value:v,selected:String(v)===String(val)},t);}));s.value=val??'';if(onchange)s.addEventListener('change',()=>onchange(s.value));return s;}
 const field=(label,ctrl)=>h('label',{class:'f'},label,ctrl);
+function dropzone(onFile){
+ const input=h('input',{type:'file',accept:'application/json,.json','aria-label':'Archivo JSON de cartera'});
+ const zone=h('div',{class:'dropzone',role:'button',tabindex:'0',onclick:()=>input.click(),onkeydown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click();}}},
+  h('strong',{},'Suelta aquí datos-wallet-claro.json'),
+  h('span',{},'o haz clic para elegir el archivo · solo en este navegador'),
+  input);
+ input.addEventListener('change',()=>{const f=input.files?.[0];if(f)onFile(f);});
+ ;['dragenter','dragover'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.classList.add('drag');}));
+ ;['dragleave','drop'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.classList.remove('drag');}));
+ zone.addEventListener('drop',e=>{const f=e.dataTransfer?.files?.[0];if(f)onFile(f);});
+ return zone;
+}
+const readJsonFile=(file,cb)=>{const r=new FileReader();r.onload=()=>{try{cb(JSON.parse(r.result));}catch{toast('El archivo no es un JSON válido');}};r.readAsText(file);};
 const dlIcon=()=>{const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 16 16');s.setAttribute('class','i');s.setAttribute('aria-hidden','true');s.innerHTML='<path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';return s;};
 
 // ---------- ICS ----------
@@ -179,12 +208,31 @@ function vResumen(){
  const proxProg=reunionesProg().map(r=>({titulo:clienteById(r.cuenta_id)?.empresa||r.titulo,cuenta_id:r.cuenta_id,slot:`${r.fecha} ${r.hora}`}));
  const prox=[...proxAgenda,...proxProg].sort((a,b)=>a.slot.localeCompare(b.slot));
  const hoy=now.toISOString().slice(0,10);let nx=prox.filter(x=>x.slot>=hoy).slice(0,6);const futuro=nx.length>0;if(!nx.length)nx=prox.slice(0,6);
- return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Resumen'),h('p',{class:'sub'},`${C.length} cuentas. Corte: ${D.meta.corte}. Fuente: ${D.meta.fuente}.`)),
- h('div',{class:'grid kpis'},kpi(nf.format(C.length),'Cuentas'),kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)'),kpi(nf.format(sum(ab,o=>o.monto)),'Pipeline abierto'),kpi(nf.format(sum(ab,o=>o.monto*o.prob/100)),'Pipeline ponderado'),kpi(`${contact}/${C.length}`,'Cuentas contactadas'),kpi(`${hechas}/${ag.length}`,'Reuniones realizadas'),kpi(nf.format(venc),'Vencido o vence en 3 meses'),kpi(nf.format(sinAct),'Sin actividad en 30 días'),kpi(nf.format(fuera),'Ofertas fuera de catálogo')),
- h('div',{class:'grid cols'},h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa (monto)'),bars(etapas,{color:'var(--accent)'})),h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola (%)'),bars(conv,{color:'var(--ok)'})),
-  h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--accent)'})),h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
- h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones':'Primeras reuniones'),
-  h('ul',{class:'list'},nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))))));
+ return h('div',{class:'view'},
+  h('header',{class:'page-head'},
+   h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),
+   h('h1',{},'Resumen'),
+   h('p',{class:'sub'},`${C.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`)),
+  h('div',{class:'grid kpis-hero'},
+   kpi(nf.format(C.length),'Cuentas','hero-kpi'),
+   kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)','hero-kpi'),
+   kpi(nf.format(sum(ab,o=>o.monto)),'Pipeline abierto','hero-kpi')),
+  h('div',{class:'grid kpis'},
+   kpi(nf.format(sum(ab,o=>o.monto*o.prob/100)),'Pipeline ponderado','kpi-sec'),
+   kpi(`${contact}/${C.length}`,'Contactadas','kpi-sec'),
+   kpi(`${hechas}/${ag.length}`,'Reuniones hechas','kpi-sec'),
+   kpi(nf.format(venc),'Vence ≤ 3 meses','kpi-sec'),
+   kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec'),
+   kpi(nf.format(fuera),'Fuera de catálogo','kpi-sec')),
+  h('div',{class:'grid cols'},
+   h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),
+   h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),
+   h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa'),bars(etapas,{color:'var(--brand)'})),
+   h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola'),bars(conv,{color:'var(--ok)'})),
+   h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--info)'})),
+   h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
+  h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones':'Primeras reuniones'),
+   h('ul',{class:'list'},nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))))));
 }
 
 function filtroCuentas(){
@@ -198,21 +246,39 @@ function filtroCuentas(){
 function vCuentas(){
  const u=(k)=>[...new Set(D.clientes.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
  const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});
- const draw=()=>{const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));cnt.textContent=`${r.length} de ${D.clientes.length} cuentas. Toca una fila para abrir la ficha.`;
-  out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Rubro','Tier','Score','Presencia','Potencial','Vencimiento','Facturación (L)','Estado','Ofertas'].map((t,i)=>h('th',{class:[4,8,10].includes(i)?'num':''},t)))),
-  h('tbody',{},r.map(c=>{const p=presencia(c.id);return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},h('td',{},c.ola),h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa)),h('td',{},c.rubro),h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier)),h('td',{class:'num'},c.score??'n/d'),h('td',{},madurezDe(p)),h('td',{},potencialDe(p)),h('td',{},c.ventana),h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),h('td',{},estado(c)),h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
+ const draw=()=>{const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
+  out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[3,6,8].includes(i)?'num':''},t)))),
+  h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);
+   return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
+    h('td',{},h('span',{class:'chip'},c.ola)),
+    h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},c.rubro+(c.ventana?` · ${c.ventana}`:'')))),
+    h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier)),
+    h('td',{class:'num'},c.score??'n/d'),
+    h('td',{},h('span',{class:'chip '+chipMad(mad)},mad)),
+    h('td',{},h('span',{class:'chip '+chipPot(pot)},pot)),
+    h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),
+    h('td',{},h('span',{class:'chip '+chipEst(est)},est)),
+    h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
  const set=(k)=>(v)=>{Q[k]=v;draw();};
- const fl=h('div',{class:'filters'},
-  field('Buscar',h('input',{type:'search',placeholder:'Nombre de la empresa',value:Q.q,oninput:e=>{Q.q=e.target.value;draw();}})),
-  field('Ejecutivo',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'})),field('Rubro',sel(u('rubro'),Q.rubro,set('rubro'),{any:'Todos'})),
-  field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'})),field('Tier',sel(['A','B','C','Validar','Pausa'],Q.tier,set('tier'),{any:'Todos'})),
-  field('Vencimiento',sel(['Vencido','Este mes','1-3 meses','4-6 meses','7-12 meses','Más de 12 meses','Sin dato'],Q.vent,set('vent'),{any:'Todos'})),
-  field('Estado',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],Q.estado,set('estado'),{any:'Todos'})),
-  field('Presencia',sel(['Sin registrar','Sin presencia','Básica','Media','Alta'],Q.pres,set('pres'),{any:'Todas'})),
-  field('Oficinas',sel([['0','Ninguna'],['1-2','1 o 2'],['3+','3 o más']],Q.ofic,set('ofic'),{any:'Todas'})),
-  field('Potencial',sel(['Sin registrar','Bajo','Medio','Alto'],Q.pot,set('pot'),{any:'Todos'})),
-  h('div',{},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');route();}},'Limpiar filtros')));
- draw();return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Cuentas'),cnt),fl,out);}
+ const activeFilters=[Q.prop,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot].filter(Boolean).length;
+ const fl=h('details',{class:'filters-panel',open:!!(Q.q||activeFilters)},
+  h('summary',{},h('span',{},'Filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Buscar y acotar la lista')),
+  h('div',{class:'filters-top',style:'margin-top:14px'},
+   field('Buscar',h('input',{type:'search',placeholder:'Nombre de la empresa',value:Q.q,oninput:e=>{Q.q=e.target.value;draw();}})),
+   field('Ola',sel(['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'],Q.ola,set('ola'),{any:'Todas'})),
+   field('Ejecutivo',sel(u('propone'),Q.prop,set('prop'),{any:'Todos'})),
+   field('Potencial',sel(['Sin registrar','Bajo','Medio','Alto'],Q.pot,set('pot'),{any:'Todos'}))),
+  h('div',{class:'filters'},
+   field('Rubro',sel(u('rubro'),Q.rubro,set('rubro'),{any:'Todos'})),
+   field('Tier',sel(['A','B','C','Validar','Pausa'],Q.tier,set('tier'),{any:'Todos'})),
+   field('Vencimiento',sel(['Vencido','Este mes','1-3 meses','4-6 meses','7-12 meses','Más de 12 meses','Sin dato'],Q.vent,set('vent'),{any:'Todos'})),
+   field('Estado',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],Q.estado,set('estado'),{any:'Todos'})),
+   field('Presencia',sel(['Sin registrar','Sin presencia','Básica','Media','Alta'],Q.pres,set('pres'),{any:'Todas'})),
+   field('Oficinas',sel([['0','Ninguna'],['1-2','1 o 2'],['3+','3 o más']],Q.ofic,set('ofic'),{any:'Todas'})),
+   h('div',{style:'display:flex;align-items:end'},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');route();}},'Limpiar'))));
+ draw();return h('div',{class:'view'},
+  h('header',{class:'page-head'},h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),h('h1',{},'Cuentas'),cnt),
+  fl,out);}
 
 function vCliente(id){
  const c=clienteById(id);if(!c)return h('p',{class:'empty'},'No se encontró la cuenta.');
@@ -376,24 +442,34 @@ function vCatalogo(){
   count,wrap);}
 
 function vAjustes(){
- const readFile=(file,cb)=>{const r=new FileReader();r.onload=()=>{try{cb(JSON.parse(r.result));}catch{toast('El archivo no es un JSON válido');}};r.readAsText(file);};
  const backups=loadBackups();
  let nombre=who();
- return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Ajustes'),h('p',{class:'sub'},'Todo se guarda en este navegador (GitHub Pages no tiene servidor de datos). No subas facturación real al repositorio.')),
- h('div',{class:'grid cols'},
-  h('div',{class:'card glass'},h('h2',{},'Tu nombre en este equipo'),h('p',{class:'muted'},'Se etiqueta en notas, ofertas, presencia y reuniones de este navegador.'),
-   field('Nombre',h('input',{value:nombre,placeholder:'Ej. Linda Guerra',oninput:e=>nombre=e.target.value})),
-   h('button',{class:'primary',onclick:()=>{try{localStorage.setItem(LS_WHO,nombre.trim());toast('Nombre guardado');}catch{toast('No se pudo guardar');}}},'Guardar nombre')),
-  h('div',{class:'card glass'},h('h2',{},'Cargar datos de cuentas'),h('p',{class:'muted'},'JSON con clientes, catálogo, playbook y agenda. Archivo local — nunca al repo.'),
-   h('input',{type:'file',accept:'application/json,.json','aria-label':'Archivo de datos',onchange:e=>{const f=e.target.files[0];if(f)readFile(f,j=>{if(!Array.isArray(j.clientes)||!Array.isArray(j.agenda)||!Array.isArray(j.catalogo))return toast('Faltan clientes, catálogo o agenda');try{localStorage.setItem(LS_DATA,JSON.stringify(j));}catch{return toast('El archivo es muy grande para este navegador');}toast('Datos cargados');setTimeout(()=>location.reload(),600);});}}),
-   h('p',{},h('button',{onclick:()=>{localStorage.removeItem(LS_DATA);location.reload();}},'Volver a los datos de demostración'))),
-  h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Tecnologías, ofertas, notas, estados, agenda, presencia y reuniones. Pásalo a otra persona por archivo.'),
-   h('p',{class:'row'},h('button',{class:'primary',onclick:()=>download('seguimiento-wallet.json',JSON.stringify(S,null,1),'application/json')},'Descargar respaldo'),
-    h('label',{class:'btn'},'Importar respaldo',h('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:e=>{const f=e.target.files[0];if(f)readFile(f,j=>{S=j;saveState({backup:false});toast('Respaldo importado');route();});}}))),
-   h('p',{},h('button',{class:'danger',onclick:()=>{if(!S._conf){S._conf=1;toast('Toca otra vez para borrar todo el seguimiento');setTimeout(()=>delete S._conf,3000);return;}S={};saveState({backup:false});toast('Seguimiento borrado');route();}},'Borrar seguimiento'))),
-  h('div',{class:'card glass'},h('h2',{},`Versiones locales (máx. ${MAX_BACKUPS})`),h('p',{class:'muted'},'Cada guardado deja una copia en este navegador. No sincroniza con otros.'),
-   backups.length?h('ul',{class:'list'},backups.map((b,i)=>h('li',{},h('span',{},`${fdate(b.at.slice(0,10))} ${b.at.slice(11,16)}`,b.by?` · ${b.by}`:''),
-    h('button',{class:'sm',onclick:()=>{S=b.state;saveState({backup:false});toast('Versión restaurada');route();}},'Restaurar')))):h('p',{class:'empty'},'Aún no hay versiones guardadas.'))));}
+ const carteraCard=h('div',{class:'card glass'},
+  h('h2',{},'Cartera activa'),
+  h('div',{class:'status-card'},
+   h('div',{class:'status-row'},h('span',{},'Modo'),h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demostración':'Datos reales')),
+   h('div',{class:'status-row'},h('span',{},'Cuentas'),h('strong',{},nf.format(D.clientes.length))),
+   h('div',{class:'status-row'},h('span',{},'Fuente'),h('span',{class:'muted'},D.meta?.fuente||'—')),
+   h('div',{class:'status-row'},h('span',{},'Corte'),h('span',{class:'muted'},D.meta?.corte||'—'))),
+  DEMO?h('p',{class:'muted',style:'margin:12px 0 0'},'Para ver facturación real de Claro, carga el JSON abajo. No se sube a GitHub.')
+   :h('p',{class:'muted',style:'margin:12px 0 0'},'Esta cartera vive solo en tu navegador.'));
+ return h('div',{class:'view'},
+  h('header',{class:'page-head'},h('h1',{},'Ajustes'),h('p',{class:'sub'},'GitHub Pages no guarda datos en servidor. Todo queda en este navegador.')),
+  h('div',{class:'grid cols'},
+   carteraCard,
+   h('div',{class:'card glass'},h('h2',{},'Tu nombre en este equipo'),h('p',{class:'muted'},'Se etiqueta en notas, ofertas, presencia y reuniones.'),
+    field('Nombre',h('input',{value:nombre,placeholder:'Ej. Linda Guerra',oninput:e=>nombre=e.target.value})),
+    h('button',{class:'primary',onclick:()=>{try{localStorage.setItem(LS_WHO,nombre.trim());toast('Nombre guardado');}catch{toast('No se pudo guardar');}}},'Guardar nombre')),
+   h('div',{class:'card glass'},h('h2',{},'Cargar datos de cuentas'),h('p',{class:'muted'},'Archivo local con clientes, catálogo, playbook y agenda. Nunca al repositorio.'),
+    dropzone(f=>readJsonFile(f,applyCartera)),
+    h('p',{class:'row',style:'margin-top:12px'},h('button',{onclick:()=>{localStorage.removeItem(LS_DATA);location.reload();}},'Volver a demostración'))),
+   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Tecnologías, ofertas, notas, estados, agenda, presencia y reuniones.'),
+    h('p',{class:'row'},h('button',{class:'primary',onclick:()=>download('seguimiento-wallet.json',JSON.stringify(S,null,1),'application/json')},'Descargar respaldo'),
+     h('label',{class:'btn'},'Importar respaldo',h('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:e=>{const f=e.target.files[0];if(f)readJsonFile(f,j=>{S=j;saveState({backup:false});toast('Respaldo importado');route();});}}))),
+    h('p',{},h('button',{class:'danger',onclick:()=>{if(!S._conf){S._conf=1;toast('Toca otra vez para borrar todo el seguimiento');setTimeout(()=>delete S._conf,3000);return;}S={};saveState({backup:false});toast('Seguimiento borrado');route();}},'Borrar seguimiento'))),
+   h('div',{class:'card glass'},h('h2',{},`Versiones locales (máx. ${MAX_BACKUPS})`),h('p',{class:'muted'},'Cada guardado deja una copia en este navegador.'),
+    backups.length?h('ul',{class:'list'},backups.map(b=>h('li',{},h('span',{},`${fdate(b.at.slice(0,10))} ${b.at.slice(11,16)}`,b.by?` · ${b.by}`:''),
+     h('button',{class:'sm',onclick:()=>{S=b.state;saveState({backup:false});toast('Versión restaurada');route();}},'Restaurar')))):h('p',{class:'empty'},'Aún no hay versiones guardadas.'))));}
 
 const routes={resumen:vResumen,cuentas:vCuentas,rubros:vRubros,agenda:vAgenda,catalogo:vCatalogo,ajustes:vAjustes};
 function route(){
@@ -413,7 +489,12 @@ async function init(){
  if(!D){try{D=await (await fetch('data/demo.json')).json();}catch{$('#main').textContent='No se pudo cargar los datos de demostración.';return;}}
  try{const med=await (await fetch('data/medida.json')).json();D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida').concat(med);}catch{}
  DEMO=!!(D.meta&&D.meta.demo);
- const b=$('#banner');if(DEMO){b.hidden=false;b.textContent='Datos de demostración. Carga tu JSON real en Ajustes (solo en tu navegador).';}
+ const b=$('#banner');
+ if(DEMO){
+  b.hidden=false;b.replaceChildren(
+   h('span',{class:'banner-msg'},'Estás en datos de demostración (cuentas ficticias).'),
+   h('a',{class:'btn brand',href:'#/ajustes'},'Cargar JSON real'));
+ }else{b.hidden=true;b.replaceChildren();}
  window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});route();
 }
 init();
