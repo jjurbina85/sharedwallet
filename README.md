@@ -25,6 +25,7 @@ Seguimiento de cuentas PYME: clientes, tecnologías, ofertas, agenda (.ics), pre
 - **Próximas reuniones** en Resumen: solo estado **Confirmado** (Bloqueo no aparece ahí)
 - Cuentas: filtros jefe / ejecutivo de venta / propuesto por el equipo
 - Ficha: asignar **ejecutivo de venta**, capturar **facturación promedio (L)** si falta, señales técnicas (VPN, casa/proyecto, SAP ECC), preguntas y soluciones del catálogo
+- **KPIs Claro** en ficha: líneas móviles (cantidad aprox.), servicios fijos (internet / DID / MPLS) y **SVA** (casi todo el catálogo de preventa; foco del equipo)
 - Ajustes: **jefe por asesor** (las cuentas del asesor siguen al nuevo jefe en filtros/KPIs)
 - Rubros: abajo, **soluciones que aplican** (Claro / Partner / A la medida) según el filtro
 - Agenda base + reuniones programadas desde fichas

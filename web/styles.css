@@ -108,6 +108,20 @@ h3{font-size:12px;font-weight:600;margin:0 0 4px;color:var(--muted);text-transfo
 .hero-kpi b{font-size:clamp(34px,3.6vw,44px)}
 .kpi span,.hero-kpi span{color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.01em}
 .kpi-sec b{font-size:22px}
+.kpi-hint,.card-hint{
+  margin:8px 0 0;font-size:11px;line-height:1.4;color:var(--muted);font-weight:450;max-width:42ch;
+}
+.hero-kpi .kpi-hint{font-size:12px;max-width:48ch}
+.board-legend{margin:8px 0 0;font-size:13px;color:var(--muted);max-width:62ch;line-height:1.4}
+.jefe-kpi-hint{margin:0;font-size:11px;line-height:1.35;color:var(--muted);text-align:left;font-weight:450}
+.card-hint{margin:0 0 12px;max-width:56ch}
+.kpi-claro-card{margin-bottom:16px}
+.kpi-claro-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:8px}
+.kpi-claro-col{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.35);min-width:0}
+.kpi-claro-col h3{margin:0 0 8px;font-size:14px;font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kpi-claro-col .form{margin-top:8px}
+.list.compact li{padding:7px 0;font-size:13px}
+@media (max-width:960px){.kpi-claro-grid{grid-template-columns:1fr}}
 
 .bar{
   display:grid;grid-template-columns:minmax(96px,1.35fr) 3fr 3.4rem;gap:8px;align-items:center;

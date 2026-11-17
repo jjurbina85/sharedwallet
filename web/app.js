@@ -57,6 +57,60 @@ const abiertas=()=>D.clientes.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Per
 const sum=(a,f)=>a.reduce((s,x)=>s+(Number(f(x))||0),0);
 const chipTier=t=>({A:'ok',B:'',C:'',Validar:'warn',Pausa:'bad'}[t]??'');
 const chipClase=c=>c==='Catálogo Claro'?'ok':c==='Partner'?'warn':c==='A la medida'?'info':'bad';
+const KPI_CLARO_LABEL={movil:'Líneas móviles',fijo:'Servicios fijos',sva:'SVA'};
+const chipKpi=k=>k==='sva'?'ok':k==='fijo'?'info':k==='movil'?'warn':'muted';
+/** Clasifica ítems del catálogo en los 3 KPI Claro. Fijos = internet/DID/MPLS/enlaces; el resto del catálogo es SVA (foco del equipo). */
+function kpiClaroOf(item){
+ if(item&&item.kpi_claro)return item.kpi_claro;
+ const t=`${item?.solucion||''} ${item?.area||''} ${item?.producto||''} ${item?.familia||''} ${item?.nota||''}`.toLowerCase();
+ if(/\bl[ií]neas?\s*m[oó]viles?\b|\bm[oó]vil\b.*\bl[ií]neas?\b|\bsim\b|voz y datos/i.test(t))return 'movil';
+ if(/\bmpls\b|\bdid\b|internet dedicado|enlace de datos|enlaces?\b|sd-?wan|conectividad|wifi empresarial|renovaci[oó]n de infraestructura/i.test(t))return 'fijo';
+ return 'sva';
+}
+function claroKpi(id){
+ const m=st('claroKpi')[id];
+ if(m&&typeof m==='object'){
+  m.movil=m.movil||{tiene:'',cant:''};
+  m.fijo=m.fijo||{tiene:'',items:{},cants:{},nota:''};
+  m.fijo.items=m.fijo.items||{};
+  m.fijo.cants=m.fijo.cants||{};
+  // migrar campos viejos texto → checks
+  if(m.fijo.internet&&!m.fijo.items['Internet dedicado']){m.fijo.items['Internet dedicado']=true;m.fijo.cants['Internet dedicado']=m.fijo.internet;}
+  if(m.fijo.did&&!m.fijo.items['DID']){m.fijo.items['DID']=true;m.fijo.cants['DID']=m.fijo.did;}
+  if(m.fijo.mpls&&!m.fijo.items['Enlace de datos MPLS']){m.fijo.items['Enlace de datos MPLS']=true;m.fijo.cants['Enlace de datos MPLS']=m.fijo.mpls;}
+  m.sva=m.sva||{items:{}};
+  m.sva.items=m.sva.items||{};
+  return m;
+ }
+ return st('claroKpi')[id]={
+  movil:{tiene:'',cant:''},
+  fijo:{tiene:'',items:{},cants:{},nota:''},
+  sva:{items:{}}
+ };
+}
+function catalogoPorKpi(k){return D.catalogo.filter(x=>kpiClaroOf(x)===k);}
+function techTieneSolucion(c,sol){
+ const re=new RegExp(String(sol).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');
+ return techs(c.id).some(t=>re.test(`${t.tema} ${t.proveedor||''}`));
+}
+/** Cantidades de 5 en 5 (0 = sin cantidad). */
+function cantOpts5(max=500){
+ const opts=[['','—'],['0','0']];
+ for(let n=5;n<=max;n+=5)opts.push([String(n),String(n)]);
+ return opts;
+}
+function snap5(v){
+ if(v==null||v==='')return '';
+ const n=Number(v);if(!Number.isFinite(n)||n<=0)return n===0?'0':'';
+ return String(Math.round(n/5)*5);
+}
+function conNosotrosFijo(ck,sol){return !!(ck.fijo&&ck.fijo.items&&ck.fijo.items[sol]);}
+function conNosotrosSva(ck,sol){return !!(ck.sva&&ck.sva.items&&ck.sva.items[sol]);}
+function countConNosotros(ck,k){
+ if(k==='fijo')return Object.values(ck.fijo?.items||{}).filter(Boolean).length;
+ if(k==='sva')return Object.values(ck.sva?.items||{}).filter(Boolean).length;
+ return 0;
+}
 const chipMad=m=>({Alta:'ok',Media:'info',Básica:'warn','Sin presencia':'bad','Sin registrar':'muted'}[m]||'muted');
 const chipPot=p=>({Alto:'ok',Medio:'warn',Bajo:'bad','Sin registrar':'muted'}[p]||'muted');
 const chipEst=e=>{
@@ -124,7 +178,10 @@ function bars(items,{href,color}={}){
  const mx=Math.max(1,...items.map(i=>i.n));
  if(!items.length)return h('p',{class:'empty'},'Sin datos todavía.');
  return h('div',{},items.map(i=>{const a=h(i.href?'a':'div',{class:'bar',href:i.href},h('span',{},i.label),h('div',{class:'t'},h('i',{style:`width:${100*i.n/mx}%;--bc:${i.color||color||'var(--muted)'}`})),h('span',{class:'n'},i.text??nf.format(i.n)));return a;}));}
-const kpi=(v,l,cls='')=>h('div',{class:`card kpi glass ${cls}`.trim()},h('b',{},v),h('span',{},l));
+const kpi=(v,l,cls='',hint='')=>h('div',{class:`card kpi glass ${cls}`.trim(),title:hint||undefined},
+ h('b',{},v),h('span',{},l),hint?h('p',{class:'kpi-hint'},hint):null);
+const chartCard=(title,hint,body)=>h('div',{class:'card glass'},
+ h('h2',{},title),hint?h('p',{class:'card-hint'},hint):null,body);
 function sel(opts,val,onchange,{label,id,any}={}){const s=h('select',{id,'aria-label':label||''},any!=null?h('option',{value:''},any):null,opts.map(o=>{const [v,t]=Array.isArray(o)?o:[o,o];return h('option',{value:v,selected:String(v)===String(val)},t);}));s.value=val??'';if(onchange)s.addEventListener('change',()=>onchange(s.value));return s;}
 const field=(label,ctrl)=>h('label',{class:'f'},label,ctrl);
 function dropzone(onFile){
@@ -346,11 +403,11 @@ function embudoStages(list){
  const pct=n=>Math.round(100*n/total);
  if(!minF){
   return[
-   {key:'universo',label:'Base total',n:list.length,pct:100,note:'Universo inicial',color:'var(--muted)'},
-   {key:'fact',label:'Facturación ≥ umbral',n:0,pct:0,note:'Define umbral en Ajustes',color:'var(--brand)',blocked:true},
-   {key:'tier',label:'Tier A o B',n:0,pct:0,note:'Bloqueado',color:'var(--info)',blocked:true},
-   {key:'pot',label:'Potencial Medio o Alto',n:0,pct:0,note:'Bloqueado',color:'var(--warn)',blocked:true},
-   {key:'aplican',label:'Aplican al seguimiento',n:0,pct:0,note:'Sin calificación',color:'var(--ok)',blocked:true}
+   {key:'universo',label:'Base total',n:list.length,pct:100,note:'Universo del filtro actual (jefe / rubro / ola).',color:'var(--muted)'},
+   {key:'fact',label:'Facturación ≥ umbral',n:0,pct:0,note:'Define el umbral mínimo en Ajustes para activar el gate.',color:'var(--brand)',blocked:true},
+   {key:'tier',label:'Tier A o B',n:0,pct:0,note:'Bloqueado hasta tener umbral: solo ICP A/B.',color:'var(--info)',blocked:true},
+   {key:'pot',label:'Potencial Medio o Alto',n:0,pct:0,note:'Bloqueado hasta tener umbral: potencial registrado.',color:'var(--warn)',blocked:true},
+   {key:'aplican',label:'Aplican al seguimiento',n:0,pct:0,note:'Sin calificación hasta definir umbral.',color:'var(--ok)',blocked:true}
   ];
  }
  const factPass=list.filter(c=>factRaw(c)!=null&&factRaw(c)>=minF);
@@ -358,11 +415,11 @@ function embudoStages(list){
  const potPass=tierPass.filter(c=>{const p=potencialDe(presencia(c.id));return p==='Medio'||p==='Alto';});
  const aplican=list.filter(c=>clasificarCuenta(c).status==='aplica');
  return[
-  {key:'universo',label:'Base total',n:list.length,pct:100,note:'Universo inicial',color:'var(--muted)'},
-  {key:'fact',label:`Facturación ≥ L ${nf.format(minF)}`,n:factPass.length,pct:pct(factPass.length),note:`${factPass.length} sobre umbral`,color:'var(--brand)'},
-  {key:'tier',label:'Tier A o B',n:tierPass.length,pct:pct(tierPass.length),note:`${tierPass.length} encajan en ICP`,color:'var(--info)'},
-  {key:'pot',label:'Potencial Medio o Alto',n:potPass.length,pct:pct(potPass.length),note:`${potPass.length} con potencial`,color:'var(--warn)'},
-  {key:'aplican',label:'Aplican al seguimiento',n:aplican.length,pct:pct(aplican.length),note:`${aplican.length} para seguimiento`,color:'var(--ok)'}
+  {key:'universo',label:'Base total',n:list.length,pct:100,note:'Punto de partida: todas las cuentas del filtro.',color:'var(--muted)'},
+  {key:'fact',label:`Facturación ≥ L ${nf.format(minF)}`,n:factPass.length,pct:pct(factPass.length),note:`${factPass.length} superan el umbral mínimo de facturación.`,color:'var(--brand)'},
+  {key:'tier',label:'Tier A o B',n:tierPass.length,pct:pct(tierPass.length),note:`${tierPass.length} encajan en el ICP (tier A o B) tras el umbral.`,color:'var(--info)'},
+  {key:'pot',label:'Potencial Medio o Alto',n:potPass.length,pct:pct(potPass.length),note:`${potPass.length} con potencial de compra Medio o Alto.`,color:'var(--warn)'},
+  {key:'aplican',label:'Aplican al seguimiento',n:aplican.length,pct:pct(aplican.length),note:`${aplican.length} listas para seguimiento (Ola 1 protegida del archive).`,color:'var(--ok)'}
  ];
 }
 function confirmarPausaCuenta(c){
@@ -452,48 +509,56 @@ function vResumen(){
    const o1=cs.filter(c=>c.ola==='Ola 1').length;
    const cont=cs.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
    const active=Q.jefe===j;
-   return h('button',{class:'card glass jefe-kpi'+(active?' on':''),onclick:()=>{Q.jefe=active?'':j;draw();}},
+   return h('button',{class:'card glass jefe-kpi'+(active?' on':''),title:`Filtrar el tablero por el equipo de ${j}`,onclick:()=>{Q.jefe=active?'':j;draw();}},
     h('div',{class:'jefe-kpi-top'},h('strong',{},j),h('span',{class:'chip'},`${cs.length} cuentas`)),
     h('div',{class:'jefe-kpi-metrics'},
      h('div',{},h('b',{},nf.format(sum(cs,factOf))),h('span',{},'Facturación (L)')),
      h('div',{},h('b',{},String(o1)),h('span',{},'Ola 1')),
-     h('div',{},h('b',{},`${cont}/${cs.length}`),h('span',{},'Contactadas'))));
+     h('div',{},h('b',{},`${cont}/${cs.length}`),h('span',{},'Contactadas'))),
+    h('p',{class:'jefe-kpi-hint'},'Facturación del equipo, prioridad Ola 1 y cuentas ya contactadas. Toca para filtrar.'));
   });
+  const heroFactHint=minF
+   ?`Cuentas con facturación ≥ L ${nf.format(minF)} (umbral de Ajustes) sobre el total del filtro.`
+   :'Suma de montos de ofertas abiertas (no ganadas ni perdidas) en el recorte.';
   root.replaceChildren(
    h('header',{class:'page-head'},
     h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),
     h('h1',{},'Resumen'),
-    h('p',{class:'sub'},Q.jefe?`${Q.jefe} · ${C.length} cuentas · Corte ${D.meta.corte}`:`${D.clientes.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`)),
+    h('p',{class:'sub'},Q.jefe?`${Q.jefe} · ${C.length} cuentas · Corte ${D.meta.corte}`:`${D.clientes.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`),
+    h('p',{class:'board-legend'},'Cada tarjeta incluye una lectura gerencial: qué mide y para qué sirve al revisar la cartera.')),
    jefeFilterBar(draw),
    factFilterBar(draw),
    h('div',{class:'grid kpis-hero'},
-    kpi(nf.format(C.length),Q.jefe||Q.factBand?'Cuentas filtradas':'Cuentas','hero-kpi'),
-    kpi(nf.format(sum(C,factOf)),'Facturación (L)','hero-kpi'),
-    kpi(minF?`${sobreMin}/${C.length}`:nf.format(sum(ab,o=>o.monto)),minF?`Sobre umbral L ${nf.format(minF)}`:'Pipeline abierto','hero-kpi')),
+    kpi(nf.format(C.length),Q.jefe||Q.factBand?'Cuentas filtradas':'Cuentas','hero-kpi','Universo visible con el filtro actual de jefe y/o facturación.'),
+    kpi(nf.format(sum(C,factOf)),'Facturación (L)','hero-kpi','Suma de facturación mensual estimada (Lempiras) de las cuentas del recorte.'),
+    kpi(minF?`${sobreMin}/${C.length}`:nf.format(sum(ab,o=>o.monto)),minF?`Sobre umbral L ${nf.format(minF)}`:'Pipeline abierto','hero-kpi',heroFactHint)),
    h('div',{class:'grid kpis kpis-embudo-link'},
-    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','kpi-sec'),
-    kpi(aplicanN==null?'—':`${aplicanN}/${C.length}`,minF?'Aplican (gate)':'Embudo sin umbral','kpi-sec'),
-    h('div',{class:'card kpi glass kpi-sec kpi-cta'},h('a',{class:'cell',href:'#/embudo'},'Abrir embudo'),h('span',{},'Decantación comercial'))),
+    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','kpi-sec','Ofertas abiertas × probabilidad de cierre. Mejor lectura del pipeline que el monto bruto.'),
+    kpi(aplicanN==null?'—':`${aplicanN}/${C.length}`,minF?'Aplican (gate)':'Embudo sin umbral','kpi-sec',minF?'Cuentas que pasan umbral + tier A/B + potencial Medio/Alto (listas para seguimiento).':'Define umbral en Ajustes para calificar quién aplica al embudo.'),
+    h('div',{class:'card kpi glass kpi-sec kpi-cta',title:'Ir al embudo de decantación'},h('a',{class:'cell',href:'#/embudo'},'Abrir embudo'),h('span',{},'Decantación comercial'),h('p',{class:'kpi-hint'},'Vista para gerencia: filtrar, ver quién aplica y archivar lo que no califica.'))),
    h('section',{class:'block'},
     h('h2',{class:'section-title'},'KPI por jefe'),
+    h('p',{class:'card-hint',style:'margin:-2px 0 12px'},'Comparativo de carga y avance por jefe de equipo. Sirve para balancear cartera y foco.'),
     h('div',{class:'grid jefes-kpis'},...jefeCards)),
    h('div',{class:'grid kpis kpis-6'},
-    kpi(nf.format(ola1),'Ola 1','kpi-sec'),
-    kpi(nf.format(sinDueno),'Sin dueño Claro','kpi-sec'),
-    kpi(`${contact}/${C.length}`,'Contactadas','kpi-sec'),
-    kpi(nf.format(venc),'Vence ≤ 3 meses','kpi-sec'),
-    kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec'),
-    kpi(`${hechas}/${ag.length||0}`,'Reuniones hechas','kpi-sec')),
+    kpi(nf.format(ola1),'Ola 1','kpi-sec','Prioridad de ataque definida en la cartera. No se archiva por el gate del embudo.'),
+    kpi(nf.format(sinDueno),'Sin dueño Claro','kpi-sec','Cuentas sin ejecutivo de venta asignado. Riesgo de falta de ownership.'),
+    kpi(`${contact}/${C.length}`,'Contactadas','kpi-sec','Ya salieron de Por contactar, Por validar o En pausa. Mide avance de gestión.'),
+    kpi(nf.format(venc),'Vence ≤ 3 meses','kpi-sec','Contrato móvil en ventana corta: oportunidad de renovación y upsell.'),
+    kpi(nf.format(sinAct),'Sin actividad 30d','kpi-sec','Sin notas, ofertas ni tecnologías registradas en 30 días. Requiere reactivación.'),
+    kpi(`${hechas}/${ag.length||0}`,'Reuniones hechas','kpi-sec','De la agenda base, cuántas ya se marcaron como realizadas.')),
    h('div',{class:'grid cols-2'},
-    h('div',{class:'card glass'},h('h2',{},'Por jefe'),bars(jefes)),
-    h('div',{class:'card glass'},h('h2',{},'Por ola de ataque'),bars(olas)),
-    h('div',{class:'card glass'},h('h2',{},'Por rubro'),bars(rub)),
-    h('div',{class:'card glass'},h('h2',{},'Por ejecutivo de venta'),bars(porDueno,{color:'var(--info)'})),
-    h('div',{class:'card glass'},h('h2',{},'Pipeline por etapa'),bars(etapas,{color:'var(--brand)'})),
-    h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola'),bars(conv,{color:'var(--ok)'})),
-    h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--info)'})),
-    h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
-   h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones confirmadas':'Reuniones confirmadas'),
+    chartCard('Por jefe','Distribución de cuentas (y facturación en la barra) por jefe. Identifica concentración de cartera.',bars(jefes)),
+    chartCard('Por ola de ataque','Priorización comercial: Ola 1 primero, luego 2/3, Validar y Pausa.',bars(olas)),
+    chartCard('Por rubro','Concentración por industria. Útil para empujar soluciones típicas del rubro.',bars(rub)),
+    chartCard('Por ejecutivo de venta','Ownership Claro: quién es dueño de la cuenta en preventa.',bars(porDueno,{color:'var(--info)'})),
+    chartCard('Pipeline por etapa','Monto y cantidad de ofertas abiertas por etapa del ciclo de venta.',bars(etapas,{color:'var(--brand)'})),
+    chartCard('Cuentas con oferta por ola','% de cuentas de cada ola que ya tienen al menos una oferta cargada.',bars(conv,{color:'var(--ok)'})),
+    chartCard('Presencia digital','Madurez digital registrada (web, oficinas, correo, app). Alimenta sugerencias.',bars(madBars,{color:'var(--info)'})),
+    chartCard('Potencial de compra','Estimación de oportunidad según presencia. Alto = priorizar diagnóstico.',bars(potBars))),
+   h('div',{class:'card glass'},
+    h('h2',{},futuro?'Próximas reuniones confirmadas':'Reuniones confirmadas'),
+    h('p',{class:'card-hint'},'Solo estado Confirmado (no Bloqueo). Agenda operativa para seguimiento de la semana.'),
     h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones confirmadas en este recorte')))));
  };
 
@@ -604,10 +669,71 @@ function vCliente(id){
  const sug=solucionesParaCliente(c);
  const pregs=preguntasDeSenales(id,c);
  const sen=senalesOf(id);
+ const ck=claroKpi(id);
+ const fijoCat=catalogoPorKpi('fijo');
+ const svaCat=catalogoPorKpi('sva').filter(x=>!/forticare|fortiguard|fortiflex|licencia/i.test(x.solucion+x.tipo));
+ const nFijoOk=countConNosotros(ck,'fijo');
+ const nSvaOk=countConNosotros(ck,'sva');
  const asesores=asesoresConocidos();
  const duenoOpts=[['', 'Sin dueño Claro'],...asesores.map(a=>[a,a])];
  if(duenoOf(c)&&!asesores.includes(duenoOf(c)))duenoOpts.push([duenoOf(c),duenoOf(c)]);
  let factDraft=factRaw(c)==null?'':String(factRaw(c));
+ const saveCk=()=>{
+  ck.movil.cant=snap5(ck.movil.cant);
+  for(const k of Object.keys(ck.fijo.cants||{}))ck.fijo.cants[k]=snap5(ck.fijo.cants[k]);
+  if(nFijoOk>0)ck.fijo.tiene='si';
+  if(nSvaOk>0&&ck.movil.tiene!=='no'){/* sva independiente */}
+  saveState();toast('KPIs Claro guardados');rerender();
+ };
+ const tieneOpts=[['','Sin dato'],['si','Sí tiene'],['no','No tiene']];
+ const movilCant=snap5(ck.movil.cant!==''&&ck.movil.cant!=null?ck.movil.cant:(c.lineas!=null&&c.lineas!==''?c.lineas:''));
+ const cant5=cantOpts5(500);
+ const checkFijoRow=x=>{
+  const on=conNosotrosFijo(ck,x.solucion);
+  const cantVal=snap5(ck.fijo.cants[x.solucion]||'');
+  return h('div',{class:'kpi-check-row'},
+   h('label',{class:'check'},
+    h('input',{type:'checkbox',checked:on,onchange:e=>{
+     ck.fijo.items[x.solucion]=!!e.target.checked;
+     if(e.target.checked)ck.fijo.tiene='si';
+     saveState();rerender();
+    }}),
+    h('span',{},x.solucion)),
+   on?sel(cant5,cantVal,v=>{ck.fijo.cants[x.solucion]=v;saveState();},{label:'Cant. '+x.solucion}):h('span',{class:'muted'},'—'));
+ };
+ const checkSvaRow=x=>{
+  const on=conNosotrosSva(ck,x.solucion)||techTieneSolucion(c,x.solucion);
+  return h('label',{class:'check'},
+   h('input',{type:'checkbox',checked:on,onchange:e=>{
+    ck.sva.items[x.solucion]=!!e.target.checked;
+    if(e.target.checked&&!techTieneSolucion(c,x.solucion)){
+     (st('tech')[id]=st('tech')[id]||[]).unshift({tema:x.solucion,proveedor:'Claro',vence:'',id:uid(),...stamp()});
+    }
+    saveState();rerender();
+   }}),
+   h('span',{},x.solucion,h('span',{class:'muted'},` · ${x.clase}`)));
+ };
+ const kpiClaroCard=h('div',{class:'card glass kpi-claro-card'},
+  h('h2',{},'KPIs Claro'),
+  h('p',{class:'card-hint'},'Marca qué ya tiene con Claro. Cantidades de 5 en 5. SVA es el KPI prioritario del equipo.'),
+  h('div',{class:'grid kpi-claro-grid'},
+   h('div',{class:'kpi-claro-col'},
+    h('h3',{},h('span',{class:'chip '+chipKpi('movil')},'Móvil'),' Líneas móviles'),
+    h('p',{class:'muted'},'¿Tiene líneas con nosotros? Cantidad aprox. de 5 en 5.'),
+    field('¿Tiene líneas?',sel(tieneOpts,ck.movil.tiene||'',v=>{ck.movil.tiene=v;saveState();rerender();},{label:'Tiene líneas'})),
+    field('Cantidad (de 5 en 5)',sel(cant5,movilCant,v=>{ck.movil.cant=v;if(v&&v!=='0')ck.movil.tiene='si';saveState();rerender();},{label:'Cantidad líneas'})),
+    h('p',{class:'muted'},c.lineas!=null&&c.lineas!==''?`Dato cartera: ${c.lineas} líneas.`:'Sin líneas en el JSON de cartera.')),
+   h('div',{class:'kpi-claro-col'},
+    h('h3',{},h('span',{class:'chip '+chipKpi('fijo')},'Fijos'),' Servicios fijos'),
+    h('p',{class:'muted'},`Check lo que ya tiene con Claro · ${nFijoOk} marcados. Cantidad de 5 en 5 si aplica.`),
+    field('¿Tiene fijos?',sel(tieneOpts,ck.fijo.tiene||'',v=>{ck.fijo.tiene=v;saveState();rerender();},{label:'Tiene fijos'})),
+    h('div',{class:'kpi-check-list'},...fijoCat.map(checkFijoRow)),
+    field('Nota',h('input',{value:ck.fijo.nota||'',placeholder:'Operador actual, renovación…',oninput:e=>{ck.fijo.nota=e.target.value;}}))),
+   h('div',{class:'kpi-claro-col'},
+    h('h3',{},h('span',{class:'chip '+chipKpi('sva')},'SVA'),' Valor agregado'),
+    h('p',{class:'muted'},`Check SVA que ya tiene con nosotros · ${nSvaOk} marcados (prioridad del equipo).`),
+    h('div',{class:'kpi-check-list scroll'},...svaCat.map(checkSvaRow)))),
+  h('p',{class:'row',style:'margin-top:12px'},h('button',{class:'primary',onclick:saveCk},'Guardar KPIs Claro')));
  const factForm=h('div',{class:'form'},
   field('Facturación promedio (L)',h('input',{type:'number',min:'0',step:'1000',inputmode:'numeric',value:factDraft,placeholder:c.fact==null?'Sin dato en cartera — captura promedio':'Corregir / promediar',oninput:e=>factDraft=e.target.value})),
   h('p',{class:'row'},
@@ -633,7 +759,21 @@ function vCliente(id){
   field('App propia',sel(APP_OPTS,p.app,v=>{p.app=v;Object.assign(p,stamp());saveState();rerender();})),
   h('button',{class:'primary',onclick:()=>{Object.assign(p,stamp());saveState();toast('Presencia guardada');rerender();}},'Guardar presencia'));
 
- return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${c.ola} · Tier ${c.tier} · Score ${c.score??'n/d'}`)),
+ const movilResumen=(()=>{
+  const tiene=ck.movil.tiene==='si'?'Sí':ck.movil.tiene==='no'?'No':'n/d';
+  const cant=ck.movil.cant||c.lineas;
+  return cant!=null&&cant!==''?`${tiene} · ~${cant}`:tiene;
+ })();
+ const fijoResumen=(()=>{
+  const tiene=ck.fijo.tiene==='si'?'Sí':ck.fijo.tiene==='no'?'No':'n/d';
+  const parts=[ck.fijo.internet&&`Int: ${ck.fijo.internet}`,ck.fijo.did&&`DID: ${ck.fijo.did}`,ck.fijo.mpls&&`MPLS: ${ck.fijo.mpls}`].filter(Boolean);
+  return parts.length?`${tiene} · ${parts.join(' · ')}`:tiene;
+ })();
+ return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${c.ola} · Tier ${c.tier} · Score ${c.score??'n/d'}`),
+  h('p',{class:'row',style:'margin-top:8px'},
+   h('span',{class:'chip '+chipKpi('movil')},`Móvil: ${movilResumen}`),
+   h('span',{class:'chip '+chipKpi('fijo')},`Fijos: ${fijoResumen}`),
+   h('span',{class:'chip '+chipKpi('sva')},`SVA: ${svaTiene.length} registrados`))),
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Ficha'),h('div',{class:'dl'},
      h('p',{},h('span',{class:'muted'},'Jefe'),h('br'),jefeOf(c)||'Sin dato',asesorActivo(c)&&jefeOf(c)!==c.jefe?h('span',{class:'muted'},` · según asesor ${asesorActivo(c)}`):null),
@@ -642,7 +782,7 @@ function vCliente(id){
      h('p',{},h('span',{class:'muted'},'Propuesto por el equipo'),h('br'),c.propone||'Sin dato'),
      h('p',{},h('span',{class:'muted'},'Segmento'),h('br'),c.segmento||'—'),
      h('p',{},h('span',{class:'muted'},'Facturación (L)'),h('br'),factRaw(c)==null?'—':nf.format(factOf(c)),factOverride(c)?h('span',{class:'muted'},' · promedio local'):null),
-     h('p',{},h('span',{class:'muted'},'Líneas'),h('br'),c.lineas??'—'),h('p',{},h('span',{class:'muted'},'Vencimiento móvil'),h('br'),c.ventana),
+     h('p',{},h('span',{class:'muted'},'Líneas (cartera)'),h('br'),c.lineas??'—'),h('p',{},h('span',{class:'muted'},'Vencimiento móvil'),h('br'),c.ventana),
      h('p',{},h('span',{class:'muted'},'En Salesforce'),h('br'),c.sf||'—'),h('p',{},h('span',{class:'muted'},'Califica proyecto grande'),h('br'),c.grande||'—')),
      factForm,
      c.alerta?h('p',{},h('span',{class:'chip bad'},c.alerta)):null,
@@ -650,6 +790,7 @@ function vCliente(id){
    h('div',{class:'card glass'},h('h2',{},'Cómo atacarla'),h('div',{class:'dl'},
      h('p',{},h('h3',{},'Ángulo'),c.angulo),h('p',{},h('h3',{},'Solución ancla'),c.ancla),h('p',{},h('h3',{},'Disparador'),c.disparador),h('p',{},h('h3',{},'Apertura'),c.apertura),
      h('p',{},h('h3',{},'Preguntas de descubrimiento'),c.discovery),h('p',{},h('h3',{},'Objeción probable'),c.objecion),h('p',{},h('h3',{},'Primer paso'),c.prueba),h('p',{},h('h3',{},'Siguiente paso'),c.siguiente)))),
+  kpiClaroCard,
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Hallazgos técnicos'),h('p',{class:'muted'},'Marca lo que investigaste del cliente (VPN, casa/proyecto, SAP ECC…).'),senForm),
    h('div',{class:'card glass'},h('h2',{},'Preguntas a enfrentar'),pregList)),
@@ -762,23 +903,31 @@ function vAgenda(){
  return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Agenda'),stat),progWrap,h('div',{class:'filters'},field('Tipo',sel(['Cuenta','Tecnología','Presupuesto'],AQ.tipo,set('tipo'),{any:'Todos'})),field('Participante',sel(ps,AQ.prop,set('prop'),{any:'Todos'})),field('Mes',sel(meses,AQ.mes,set('mes'),{any:'Todos'}))),wrap);}
 
 function vCatalogo(){
- const Qc={clase:'',fam:'',tipo:'',q:''};
+ const Qc={clase:'',fam:'',tipo:'',kpi:'',q:''};
  const wrap=h('div',{class:'wrap glass'}),count=h('p',{class:'muted',role:'status'});
  const draw=()=>{
   const q=Qc.q.trim().toLowerCase();
-  const rows=D.catalogo.filter(x=>(!Qc.clase||x.clase===Qc.clase)&&(!Qc.fam||x.familia===Qc.fam)&&(!Qc.tipo||x.tipo===Qc.tipo)&&(!q||[x.area,x.solucion,x.producto,x.nota,x.familia].join(' ').toLowerCase().includes(q)));
-  count.textContent=`${rows.length} de ${D.catalogo.length} soluciones`;
-  wrap.replaceChildren(rows.length?h('table',{},h('thead',{},h('tr',{},['Área','Solución','Clasificación','Producto o partner','Fuente','Cuándo ofrecerlo'].map(t=>h('th',{},t)))),
-   h('tbody',{},rows.map(x=>h('tr',{},h('td',{},x.familia?h('div',{},h('b',{},x.familia),h('div',{class:'muted'},x.area)):x.area),h('td',{},h('b',{},x.solucion),x.tipo?h('div',{class:'muted'},x.tipo):null),h('td',{},h('span',{class:'chip '+chipClase(x.clase)},x.clase)),h('td',{},x.producto),h('td',{class:'muted'},x.fuente),h('td',{class:'muted'},x.nota||'—'))))):h('p',{class:'empty'},'Ninguna solución coincide con los filtros.'));};
+  const rows=D.catalogo.filter(x=>{
+   const k=kpiClaroOf(x);
+   return(!Qc.clase||x.clase===Qc.clase)&&(!Qc.fam||x.familia===Qc.fam)&&(!Qc.tipo||x.tipo===Qc.tipo)&&(!Qc.kpi||k===Qc.kpi)&&(!q||[x.area,x.solucion,x.producto,x.nota,x.familia,KPI_CLARO_LABEL[k]||''].join(' ').toLowerCase().includes(q));
+  });
+  const nSva=D.catalogo.filter(x=>kpiClaroOf(x)==='sva').length;
+  const nFijo=D.catalogo.filter(x=>kpiClaroOf(x)==='fijo').length;
+  const nMov=D.catalogo.filter(x=>kpiClaroOf(x)==='movil').length;
+  count.textContent=`${rows.length} de ${D.catalogo.length} · SVA ${nSva} · Fijos ${nFijo} · Móvil ${nMov}`;
+  wrap.replaceChildren(rows.length?h('table',{},h('thead',{},h('tr',{},['Área','Solución','KPI Claro','Clasificación','Producto o partner','Fuente','Cuándo ofrecerlo'].map(t=>h('th',{},t)))),
+   h('tbody',{},rows.map(x=>{const k=kpiClaroOf(x);return h('tr',{},h('td',{},x.familia?h('div',{},h('b',{},x.familia),h('div',{class:'muted'},x.area)):x.area),h('td',{},h('b',{},x.solucion),x.tipo?h('div',{class:'muted'},x.tipo):null),h('td',{},h('span',{class:'chip '+chipKpi(k)},KPI_CLARO_LABEL[k]||k)),h('td',{},h('span',{class:'chip '+chipClase(x.clase)},x.clase)),h('td',{},x.producto),h('td',{class:'muted'},x.fuente),h('td',{class:'muted'},x.nota||'—'));}))):h('p',{class:'empty'},'Ninguna solución coincide con los filtros.'));};
  const set=k=>v=>{Qc[k]=v;draw();};
  const med=D.catalogo.filter(x=>x.clase==='A la medida');
  const fams=[...new Set(med.map(x=>x.familia))],tipos=[...new Set(med.map(x=>x.tipo))];
  draw();
- return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Catálogo'),h('p',{class:'sub'},'Homologado Claro, partners, a la medida (Fortinet, HITSS, Scitum) y fuera de catálogo.')),
-  h('div',{class:'filters'},field('Clasificación',sel(['Catálogo Claro','Partner','A la medida','Fuera de catálogo'],'',set('clase'),{any:'Todas'})),
+ return h('div',{class:'view'},h('header',{class:'page-head'},h('h1',{},'Catálogo'),h('p',{class:'sub'},'Homologado Claro, partners y a la medida. KPI Claro: Móvil · SVA (foco del equipo) · Fijos (internet, DID, MPLS).')),
+  h('div',{class:'filters'},
+   field('KPI Claro',sel([['sva','SVA'],['fijo','Servicios fijos'],['movil','Líneas móviles']],'',set('kpi'),{any:'Todos'})),
+   field('Clasificación',sel(['Catálogo Claro','Partner','A la medida','Fuera de catálogo'],'',set('clase'),{any:'Todas'})),
    fams.length?field('Familia a la medida',sel(fams,'',set('fam'),{any:'Todas'})):null,
    tipos.length?field('Tipo',sel(tipos,'',set('tipo'),{any:'Todos'})):null,
-   field('Buscar',h('input',{type:'search',placeholder:'Ej. FortiGate, SOC, licencia',oninput:e=>{Qc.q=e.target.value;draw();}}))),
+   field('Buscar',h('input',{type:'search',placeholder:'Ej. FortiGate, DID, WhatsApp',oninput:e=>{Qc.q=e.target.value;draw();}}))),
   count,wrap);}
 
 function vAjustes(){
@@ -840,7 +989,7 @@ function vAjustes(){
    h('div',{class:'card glass'},h('h2',{},'Cargar datos de cuentas'),h('p',{class:'muted'},'Archivo local con clientes, catálogo, playbook y agenda. Nunca al repositorio.'),
     dropzone(f=>readJsonFile(f,applyCartera)),
     h('p',{class:'row',style:'margin-top:12px'},h('button',{onclick:()=>{localStorage.removeItem(LS_DATA);location.reload();}},'Volver a demostración'))),
-   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Incluye tecnologías, ofertas, notas, estados, agenda, presencia, reuniones, ejecutivo, jefe por asesor, facturación promedio y señales.'),
+   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Incluye tecnologías, ofertas, notas, estados, agenda, presencia, reuniones, ejecutivo, jefe por asesor, facturación, señales y KPIs Claro (móvil / SVA / fijos).'),
     h('p',{class:'row'},h('button',{class:'primary',onclick:()=>download('seguimiento-wallet.json',JSON.stringify(S,null,1),'application/json')},'Descargar respaldo'),
      h('label',{class:'btn'},'Importar respaldo',h('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:e=>{const f=e.target.files[0];if(f)readJsonFile(f,j=>{S=j;saveState({backup:false});toast('Respaldo importado');route();});}}))),
     h('p',{},h('button',{class:'danger',onclick:()=>{if(!S._conf){S._conf=1;toast('Toca otra vez para borrar todo el seguimiento');setTimeout(()=>delete S._conf,3000);return;}S={};saveState({backup:false});toast('Seguimiento borrado');route();}},'Borrar seguimiento'))),
@@ -869,7 +1018,7 @@ function vEmbudo(){
 
   const funnel=h('div',{class:'funnel card glass'},
    h('div',{class:'funnel-head'},
-    h('div',{},h('h2',{},'Decantación de la base'),h('p',{class:'muted funnel-sub'},'Estrechamiento según filtros y gate comercial')),
+    h('div',{},h('h2',{},'Decantación de la base'),h('p',{class:'muted funnel-sub'},'Cada etapa explica el filtro gerencial: de universo amplio a cuentas que sí aplican al seguimiento.')),
     h('span',{class:'chip'},minF?'Gate activo':'Sin umbral')),
    ...stages.map((s,i)=>h('div',{class:'funnel-stage'+(s.blocked?' blocked':'')},
     h('div',{class:'funnel-meta'},
@@ -951,9 +1100,9 @@ function vEmbudo(){
       'Ocultar descartados'),
      h('button',{class:'sm',onclick:()=>{E.rubro='';E.ola='';E.vent='';E.hideDesc=true;Q.jefe='';draw();}},'Restablecer filtros'))),
    h('div',{class:'grid kpis-hero'},
-    kpi(tasa==null?'—':`${tasa}%`,'Tasa calificación','hero-kpi'),
-    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','hero-kpi'),
-    kpi(nf.format(aplican.length),`Aplican · de ${base.length}`,'hero-kpi')),
+    kpi(tasa==null?'—':`${tasa}%`,'Tasa calificación','hero-kpi','% de la base filtrada que pasa el gate (umbral + tier A/B + potencial). Lectura de calidad de cartera.'),
+    kpi(nf.format(Math.round(pond)),'Pipeline ponderado (L)','hero-kpi','Suma de ofertas abiertas × probabilidad. Valor esperado del pipeline, no el monto bruto.'),
+    kpi(nf.format(aplican.length),`Aplican · de ${base.length}`,'hero-kpi','Cuentas listas para seguimiento activo tras la decantación. El resto se revisa abajo como descartados/pendientes.')),
    funnel,
    h('div',{class:'card glass'},
     h('div',{class:'embudo-list-head'},
@@ -995,11 +1144,19 @@ async function init(){
   D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida'&&!fuerzaMedida.has(x.solucion)).concat(med);
  }catch{}
  const ensureHitss=[
-  {area:'ERP',solucion:'SAP S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Lámina de partners',nota:'Vía Global HITSS (ej. Hondupalma)'},
-  {area:'ERP',solucion:'Migración SAP ECC → S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Partner HITSS',nota:'Migración ECC 6.0 a S/4HANA con Global HITSS'}
+  {area:'ERP',solucion:'SAP S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Lámina de partners',nota:'Vía Global HITSS (ej. Hondupalma)',kpi_claro:'sva'},
+  {area:'ERP',solucion:'Migración SAP ECC → S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Partner HITSS',nota:'Migración ECC 6.0 a S/4HANA con Global HITSS',kpi_claro:'sva'}
  ];
  for(const item of ensureHitss){if(!D.catalogo.some(x=>x.solucion===item.solucion))D.catalogo.push(item);
   else{const x=D.catalogo.find(x=>x.solucion===item.solucion);if(x&&!/hitss/i.test(String(x.producto||''))){x.producto=item.producto;x.nota=item.nota||x.nota;}}}
+ const ensureFijos=[
+  {area:'Conectividad',solucion:'Internet dedicado',clase:'Catálogo Claro',producto:'Internet dedicado empresarial',fuente:'KPI Claro · Servicios fijos',nota:'KPI fijo: internet',kpi_claro:'fijo'},
+  {area:'Conectividad',solucion:'DID',clase:'Catálogo Claro',producto:'Números DID',fuente:'KPI Claro · Servicios fijos',nota:'KPI fijo: DID',kpi_claro:'fijo'},
+  {area:'Conectividad',solucion:'Enlace de datos MPLS',clase:'Catálogo Claro',producto:'Enlace MPLS / datos',fuente:'KPI Claro · Servicios fijos',nota:'KPI fijo: MPLS',kpi_claro:'fijo'},
+  {area:'Móvil',solucion:'Líneas móviles',clase:'Catálogo Claro',producto:'Voz y datos móviles',fuente:'KPI Claro · Móvil',nota:'KPI móvil: líneas',kpi_claro:'movil'}
+ ];
+ for(const item of ensureFijos){if(!D.catalogo.some(x=>x.solucion===item.solucion))D.catalogo.push(item);
+  else{const x=D.catalogo.find(x=>x.solucion===item.solucion);x.kpi_claro=item.kpi_claro;}}
  DEMO=!!(D.meta&&D.meta.demo);
  const b=$('#banner');
  if(DEMO){
