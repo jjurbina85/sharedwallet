@@ -22,11 +22,22 @@ Seguimiento de cuentas PYME: clientes, tecnologías, ofertas, agenda (.ics), pre
 ## Qué incluye
 
 - Resumen con KPIs, **por jefe**, **por ejecutivo de venta (Dueño Claro)**, olas, rubros, presencia y potencial
+- **Próximas reuniones** en Resumen: solo estado **Confirmado** (Bloqueo no aparece ahí)
 - Cuentas: filtros jefe / ejecutivo de venta / propuesto por el equipo
-- Ficha: jefe, dueño Claro (= ejecutivo de venta), propuesto por el equipo, playbook, presencia, reuniones
+- Ficha: asignar **ejecutivo de venta**, capturar **facturación promedio (L)** si falta, señales técnicas (VPN, casa/proyecto, SAP ECC), preguntas y soluciones del catálogo
+- Ajustes: **jefe por asesor** (las cuentas del asesor siguen al nuevo jefe en filtros/KPIs)
+- Rubros: abajo, **soluciones que aplican** (Claro / Partner / A la medida) según el filtro
 - Agenda base + reuniones programadas desde fichas
-- Catálogo Claro / Partner / A la medida (`web/data/medida.json`)
+- Catálogo Claro / Partner / A la medida (`web/data/medida.json`); SAP / migración vía **Global HITSS**
 - Hasta **30 versiones locales** del seguimiento en Ajustes (solo este navegador)
+
+## Operación rápida (seguimiento)
+
+1. Cargar cartera en Ajustes (JSON local).
+2. En ficha: asignar ejecutivo, marcar hallazgos (VPN, ECC…), revisar preguntas y agregar oferta.
+3. Si no hay facturación: guardar promedio en Lps en la ficha.
+4. En Ajustes, mover jefe de un asesor si hace falta.
+5. Exportar **respaldo de seguimiento** (incluye overrides: ejecutivo, jefe, facturación, señales).
 
 ## Ejecutar en local
 

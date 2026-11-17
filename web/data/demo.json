@@ -834,6 +834,14 @@
       "nota": "Es la vía del proyecto Hondupalma"
     },
     {
+      "area": "Servicios profesionales",
+      "solucion": "Migración SAP ECC → S/4HANA",
+      "clase": "Partner",
+      "producto": "Global HITSS",
+      "fuente": "Partner HITSS",
+      "nota": "Migración ECC 6.0 a S/4HANA con Global HITSS"
+    },
+    {
       "area": "IoT",
       "solucion": "GPS y gestión vehicular",
       "clase": "Catálogo Claro",

@@ -188,13 +188,120 @@ function clashMessages(fecha,hora,durMin,exceptId){
 
 // ---------- vistas ----------
 const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:'',factBand:''};
-const duenoOf=c=>(c.dueno&&String(c.dueno).trim())||'';
+const SENAL_DEFS=[
+ {k:'vpn',label:'VPN site-to-site'},
+ {k:'casa',label:'Servicios en casa / proyecto'},
+ {k:'sap_ecc',label:'SAP ECC 6.0'},
+ {k:'sap_mig',label:'Necesita migración SAP'},
+ {k:'sdwan',label:'Internet dedicado / SD-WAN'},
+ {k:'pbx',label:'PBX / telefonía'},
+ {k:'m365',label:'Correo corporativo / M365'},
+ {k:'multisede',label:'Multi-sede (≥2 oficinas)'},
+ {k:'app',label:'App / e-commerce'}
+];
+const SENAL_PREGUNTAS={
+ vpn:['¿Entre qué sedes está la VPN site-to-site?','¿Quién la opera y cuándo renueva?','¿Soporta crecimiento a finca/planta?','¿Hay backup o failover?'],
+ casa:['¿El servicio en casa/proyecto es corporativo o residencial mezclado?','¿Quién paga y hay más sitios?','¿Necesitan WiFi, IPTV o PBX unificados?'],
+ sap_ecc:['¿Qué módulos ECC usan (FI/CO/MM/PP)?','¿Hay presión de fin de soporte o upgrade?','¿Cloud u on-prem?','¿Qué integraciones (nómina, planta, export) hay?'],
+ sap_mig:['¿Hay sponsor TI y presupuesto de migración?','¿Qué permisos/aprobaciones desbloquea S/4?','¿Timeline deseado ECC → S/4HANA?'],
+ sdwan:['¿Cuántos enlaces y sedes?','¿Priorizan SD-WAN o internet dedicado?'],
+ pbx:['¿PBX física o nube? ¿Renovación?'],
+ m365:['¿Correo actual (gratis/corp)? ¿Licencias M365?'],
+ multisede:['¿Cuántas sedes y tráfico entre ellas?'],
+ app:['¿App propia o e-commerce? ¿Integración con ERP/WhatsApp?']
+};
+const SENAL_EMPUJES={
+ vpn:['Secure SD-WAN (FortiGate)','FortiGate (NGFW)','Cisco, Scitum, NetScout y Tenable','Renovación de infraestructura y enlaces (SD-WAN)'],
+ casa:['WhatsApp Business','IPTV','WiFi empresarial','PBX en la nube y contact center (UCaaS)'],
+ sap_ecc:['SAP S/4HANA','Migración SAP ECC → S/4HANA'],
+ sap_mig:['Migración SAP ECC → S/4HANA','SAP S/4HANA'],
+ sdwan:['Secure SD-WAN (FortiGate)','Renovación de infraestructura y enlaces (SD-WAN)'],
+ pbx:['PBX en la nube y contact center (UCaaS)','FortiVoice y FortiFone'],
+ m365:['Microsoft 365'],
+ multisede:['Secure SD-WAN (FortiGate)','Cisco, Scitum, NetScout y Tenable'],
+ app:['WhatsApp Business','Desarrollo de software a la medida']
+};
+function duenoOf(c){
+ const map=st('duenos');
+ if(Object.prototype.hasOwnProperty.call(map,c.id))return String(map[c.id]||'').trim();
+ return (c.dueno&&String(c.dueno).trim())||'';
+}
 const ejecVentaLabel=c=>duenoOf(c)||'Sin dueño Claro';
-const factOf=c=>{const n=Number(c.fact);return Number.isFinite(n)?n:0;};
+const asesorActivo=c=>duenoOf(c)||(c.propone&&String(c.propone).trim())||'';
+function jefeOf(c){
+ const map=st('jefesAsesor');
+ const a=asesorActivo(c);
+ if(a&&map[a])return map[a];
+ return (c.jefe&&String(c.jefe).trim())||'';
+}
+function factRaw(c){
+ const map=st('facts');
+ if(Object.prototype.hasOwnProperty.call(map,c.id)){const n=Number(map[c.id]);return Number.isFinite(n)?n:null;}
+ if(c.fact==null||c.fact==='')return null;
+ const n=Number(c.fact);return Number.isFinite(n)?n:null;
+}
+const factOf=c=>factRaw(c)??0;
+const factOverride=c=>Object.prototype.hasOwnProperty.call(st('facts'),c.id);
+const senalesOf=id=>{const s=st('senales')[id];return s&&typeof s==='object'?s:{};};
+function asesoresConocidos(){
+ const set=new Set();
+ for(const c of D.clientes){if(c.dueno)set.add(String(c.dueno).trim());if(c.propone)set.add(String(c.propone).trim());}
+ Object.values(st('duenos')).forEach(v=>{if(v&&String(v).trim())set.add(String(v).trim());});
+ return [...set].filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
+}
+function matchCatalog(text){
+ const t=String(text||'').toLowerCase();
+ if(!t)return null;
+ let hit=D.catalogo.find(x=>t.includes(String(x.solucion).toLowerCase()));
+ if(hit)return hit;
+ const aliases=[['scitum','ciberseguridad'],['sd-wan','sd-wan'],['sdwan','sd-wan'],['whatsapp','whatsapp'],['fortinet','forti'],['m365','microsoft 365'],['microsoft 365','microsoft 365'],['smartcultivo','smartcultivo'],['s/4','sap'],['ecc','sap'],['hitss','sap']];
+ for(const [a,b] of aliases){if(t.includes(a)){hit=D.catalogo.find(x=>String(x.solucion).toLowerCase().includes(b)||String(x.producto||'').toLowerCase().includes(a));if(hit)return hit;}}
+ return null;
+}
+function catalogByName(name){
+ if(!name)return null;
+ const n=String(name).toLowerCase();
+ return D.catalogo.find(x=>String(x.solucion).toLowerCase()===n)||D.catalogo.find(x=>String(x.solucion).toLowerCase().includes(n)||n.includes(String(x.solucion).toLowerCase()))||null;
+}
+function pushSug(map,item,motivo){
+ if(!item||!item.solucion)return;
+ const k=item.solucion;
+ if(!map.has(k))map.set(k,{solucion:item.solucion,clase:item.clase||'',producto:item.producto||'',motivo:motivo||''});
+ else if(motivo&&!map.get(k).motivo.includes(motivo))map.get(k).motivo=(map.get(k).motivo?map.get(k).motivo+'; ':'')+motivo;
+}
+function solucionesParaCliente(c){
+ const map=new Map();
+ const ya=new Set(techs(c.id).map(t=>String(t.tema).toLowerCase()));
+ const skipYa=name=>{const n=String(name).toLowerCase();if(/migraci[oó]n|s\/4|sap s\/4/i.test(n))return false;return [...ya].some(t=>t.includes(n)||n.includes(t));};
+ for(const t of (c.temas||'').split('; ').filter(Boolean)){const hit=matchCatalog(t);if(hit&&!skipYa(hit.solucion))pushSug(map,hit,'temas');}
+ if(c.ancla){const hit=matchCatalog(c.ancla);if(hit&&!skipYa(hit.solucion))pushSug(map,hit,'ancla');}
+ for(const s of sugerenciasDe(presencia(c.id))){const hit=matchCatalog(s);if(hit&&!skipYa(hit.solucion))pushSug(map,hit,'presencia');}
+ const sen=senalesOf(c.id);
+ for(const def of SENAL_DEFS){
+  if(!sen[def.k])continue;
+  for(const name of(SENAL_EMPUJES[def.k]||[])){const hit=catalogByName(name);if(hit&&!skipYa(hit.solucion))pushSug(map,hit,def.label);}
+ }
+ return [...map.values()];
+}
+function preguntasDeSenales(id,c){
+ const sen=senalesOf(id);const out=[];
+ for(const def of SENAL_DEFS){if(sen[def.k])for(const q of(SENAL_PREGUNTAS[def.k]||[]))out.push(q);}
+ if(c?.discovery)out.push(...String(c.discovery).split(/(?<=[¿?])\s+/).map(s=>s.trim()).filter(s=>s.length>8));
+ return [...new Set(out)];
+}
+function solucionesParaRubro(cs){
+ const map=new Map();
+ for(const c of cs)for(const s of solucionesParaCliente(c))pushSug(map,s,c.rubro||'');
+ if(!map.size){
+  const blob=cs.map(c=>[c.temas,c.ancla,c.angulo].filter(Boolean).join('; ')).join('; ');
+  for(const item of D.catalogo){if(blob.toLowerCase().includes(String(item.solucion).toLowerCase().slice(0,12)))pushSug(map,item,'rubro');}
+ }
+ return [...map.values()];
+}
 function getMinFact(){try{const n=Number(localStorage.getItem(LS_MINFACT));return Number.isFinite(n)&&n>0?n:0;}catch{return 0;}}
 function setMinFact(n){try{const v=Number(n);if(!Number.isFinite(v)||v<=0)localStorage.removeItem(LS_MINFACT);else localStorage.setItem(LS_MINFACT,String(Math.round(v)));}catch{toast('No se pudo guardar el umbral');}}
-const jefesDisponibles=()=>[...new Set(D.clientes.map(c=>c.jefe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
-const conJefe=list=>Q.jefe?list.filter(c=>c.jefe===Q.jefe):list;
+const jefesDisponibles=()=>[...new Set(D.clientes.map(jefeOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+const conJefe=list=>Q.jefe?list.filter(c=>jefeOf(c)===Q.jefe):list;
 function conAlcance(list){
  let L=conJefe(list);const m=getMinFact();
  if(m&&Q.factBand==='sobre')L=L.filter(c=>factOf(c)>=m);
@@ -207,7 +314,7 @@ function jefeFilterBar(onPick){
   h('span',{class:'jefe-bar-label'},'Jefe'),
   h('button',{class:'sm'+(Q.jefe?'':' on'),onclick:()=>{Q.jefe='';onPick();}},'Todos'),
   ...jefes.map(j=>{
-   const n=D.clientes.filter(c=>c.jefe===j).length;
+   const n=D.clientes.filter(c=>jefeOf(c)===j).length;
    return h('button',{class:'sm'+(Q.jefe===j?' on':''),onclick:()=>{Q.jefe=Q.jefe===j?'':j;onPick();}},`${j} · ${n}`);
   }),
   !jefes.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null);
@@ -233,19 +340,19 @@ function vResumen(){
   const C=conAlcance(D.clientes),now=new Date();
   const ab=C.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)).map(o=>({...o,cid:c.id})));
   const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
-  const ag=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&clienteById(e.cuenta_id)?.jefe===Q.jefe)));
+  const ag=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&jefeOf(clienteById(e.cuenta_id)||{})===Q.jefe)));
   const hechas=ag.filter(e=>(st('agenda')[e.id]||{}).hecha).length;
   const venc=C.filter(c=>['Vencido','Este mes','1-3 meses'].includes(c.ventana)).length;
   const sinAct=C.filter(c=>{const u=ultimaActividad(c);return !u||(now-u)/864e5>30;}).length;
-  const fuera=C.flatMap(c=>ofertas(c.id)).filter(o=>o.clase==='Fuera de catálogo').length;
   const ola1=C.filter(c=>c.ola==='Ola 1').length;
   const sinDueno=C.filter(c=>!duenoOf(c)).length;
   const minF=getMinFact();
   const sobreMin=minF?C.filter(c=>factOf(c)>=minF).length:null;
+  const porJefe=[...new Map(C.map(c=>[jefeOf(c)||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(jefeOf(c)||'Sin dato')===v).length}));
   const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
   const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
   const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
-  const jefes=por('jefe').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),text:`${x.n} · L ${nf.format(sum(C.filter(c=>(c.jefe||'Sin dato')===x.label),c=>c.fact))}`,color:x.label==='Sin dato'?undefined:'var(--brand)'}));
+  const jefes=porJefe.sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/cuentas?jefe='+encodeURIComponent(x.label),text:`${x.n} · L ${nf.format(sum(C.filter(c=>(jefeOf(c)||'Sin dato')===x.label),factOf))}`,color:x.label==='Sin dato'?undefined:'var(--brand)'}));
   const porDueno=[...new Map(C.map(c=>[ejecVentaLabel(c),0])).keys()].map(v=>({label:v,n:C.filter(c=>ejecVentaLabel(c)===v).length,href:'#/cuentas?dueno='+encodeURIComponent(v==='Sin dueño Claro'?'__none__':v)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):'')})).sort((a,b)=>b.n-a.n);
   const etapas=ETAPAS.filter(e=>!['Perdida'].includes(e)).map(e=>{const os=C.flatMap(c=>ofertas(c.id)).filter(o=>o.etapa===e);return {label:e,n:sum(os,o=>o.monto),text:nf.format(os.length)+' · '+nf.format(sum(os,o=>o.monto))};});
   const conv=olas.map(o=>{const cs=C.filter(c=>c.ola===o.label);const n=cs.filter(c=>ofertas(c.id).length).length;return {label:o.label,n:cs.length?100*n/cs.length:0,text:`${n}/${cs.length}`};});
@@ -253,19 +360,26 @@ function vResumen(){
   const potOrden=['Sin registrar','Bajo','Medio','Alto'];
   const madBars=madOrden.map(l=>({label:l,n:C.filter(c=>madurezDe(presencia(c.id))===l).length,href:'#/cuentas?pres='+encodeURIComponent(l)})).filter(x=>x.n);
   const potBars=potOrden.map(l=>({label:l,n:C.filter(c=>potencialDe(presencia(c.id))===l).length,href:'#/cuentas?pot='+encodeURIComponent(l),color:l==='Alto'?'var(--ok)':l==='Bajo'?'var(--bad)':undefined})).filter(x=>x.n);
-  const proxAgenda=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&clienteById(e.cuenta_id)?.jefe===Q.jefe))).map(e=>({titulo:e.titulo,cuenta_id:e.cuenta_id,slot:(st('agenda')[e.id]||{}).slot||`${e.fecha} ${e.hora}`}));
-  const proxProg=reunionesProg().filter(r=>!Q.jefe||clienteById(r.cuenta_id)?.jefe===Q.jefe).map(r=>({titulo:clienteById(r.cuenta_id)?.empresa||r.titulo,cuenta_id:r.cuenta_id,slot:`${r.fecha} ${r.hora}`}));
+  const proxAgenda=D.agenda.filter(e=>{
+   if(e.tipo!=='Cuenta')return false;
+   if((st('agenda')[e.id]||{}).status!=='Confirmado')return false;
+   const cl=e.cuenta_id&&clienteById(e.cuenta_id);return !Q.jefe||(cl&&jefeOf(cl)===Q.jefe);
+  }).map(e=>({titulo:e.titulo,cuenta_id:e.cuenta_id,slot:(st('agenda')[e.id]||{}).slot||`${e.fecha} ${e.hora}`}));
+  const proxProg=reunionesProg().filter(r=>{
+   if(r.status!=='Confirmado')return false;
+   const cl=clienteById(r.cuenta_id);return !Q.jefe||(cl&&jefeOf(cl)===Q.jefe);
+  }).map(r=>({titulo:clienteById(r.cuenta_id)?.empresa||r.titulo,cuenta_id:r.cuenta_id,slot:`${r.fecha} ${r.hora}`}));
   const prox=[...proxAgenda,...proxProg].sort((a,b)=>a.slot.localeCompare(b.slot));
   const hoy=now.toISOString().slice(0,10);let nx=prox.filter(x=>x.slot>=hoy).slice(0,6);const futuro=nx.length>0;if(!nx.length)nx=prox.slice(0,6);
   const jefeCards=jefesDisponibles().map(j=>{
-   const cs=D.clientes.filter(c=>c.jefe===j);
+   const cs=D.clientes.filter(c=>jefeOf(c)===j);
    const o1=cs.filter(c=>c.ola==='Ola 1').length;
    const cont=cs.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
    const active=Q.jefe===j;
    return h('button',{class:'card glass jefe-kpi'+(active?' on':''),onclick:()=>{Q.jefe=active?'':j;draw();}},
     h('div',{class:'jefe-kpi-top'},h('strong',{},j),h('span',{class:'chip'},`${cs.length} cuentas`)),
     h('div',{class:'jefe-kpi-metrics'},
-     h('div',{},h('b',{},nf.format(sum(cs,c=>c.fact))),h('span',{},'Facturación (L)')),
+     h('div',{},h('b',{},nf.format(sum(cs,factOf))),h('span',{},'Facturación (L)')),
      h('div',{},h('b',{},String(o1)),h('span',{},'Ola 1')),
      h('div',{},h('b',{},`${cont}/${cs.length}`),h('span',{},'Contactadas'))));
   });
@@ -278,7 +392,7 @@ function vResumen(){
    factFilterBar(draw),
    h('div',{class:'grid kpis-hero'},
     kpi(nf.format(C.length),Q.jefe||Q.factBand?'Cuentas filtradas':'Cuentas','hero-kpi'),
-    kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)','hero-kpi'),
+    kpi(nf.format(sum(C,factOf)),'Facturación (L)','hero-kpi'),
     kpi(minF?`${sobreMin}/${C.length}`:nf.format(sum(ab,o=>o.monto)),minF?`Sobre umbral L ${nf.format(minF)}`:'Pipeline abierto','hero-kpi')),
    h('section',{class:'block'},
     h('h2',{class:'section-title'},'KPI por jefe'),
@@ -299,9 +413,10 @@ function vResumen(){
     h('div',{class:'card glass'},h('h2',{},'Cuentas con oferta por ola'),bars(conv,{color:'var(--ok)'})),
     h('div',{class:'card glass'},h('h2',{},'Presencia digital'),bars(madBars,{color:'var(--info)'})),
     h('div',{class:'card glass'},h('h2',{},'Potencial de compra'),bars(potBars))),
-   h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones':'Primeras reuniones'),
-    h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones en este recorte')))));
+   h('div',{class:'card glass'},h('h2',{},futuro?'Próximas reuniones confirmadas':'Reuniones confirmadas'),
+    h('ul',{class:'list'},nx.length?nx.map(x=>h('li',{},h('span',{},x.cuenta_id?h('a',{class:'cell',href:'#/cliente/'+x.cuenta_id},x.titulo):x.titulo),h('span',{class:'muted'},fdate(x.slot.split(' ')[0])+' · '+x.slot.split(' ')[1]))):h('li',{},h('span',{class:'muted'},'Sin reuniones confirmadas en este recorte')))));
  };
+
  draw();return root;
 }
 
@@ -312,7 +427,7 @@ function filtroCuentas(){
   const oficOk=!Q.ofic||(Q.ofic==='0'?of===0:Q.ofic==='1-2'?of>=1&&of<=2:Q.ofic==='3+'?of>=3:true);
   const duenoOk=!Q.dueno||(Q.dueno==='__none__'?!duenoOf(c):duenoOf(c)===Q.dueno);
   const factOk=!m||!Q.factBand||(Q.factBand==='sobre'?factOf(c)>=m:factOf(c)<m);
-  return factOk&&(!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||c.jefe===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
+  return factOk&&(!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||jefeOf(c)===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
    &&(!Q.pres||madurezDe(p)===Q.pres)&&oficOk&&(!Q.pot||potencialDe(p)===Q.pot);
  });
 }
@@ -332,13 +447,13 @@ function vCuentas(){
    return h('tr',{class:'link'+(sobre?' row-sobre':''),onclick:()=>{location.hash='#/cliente/'+c.id;}},
     h('td',{},h('span',{class:'chip'},c.ola)),
     h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},(c.rubro||'')+(c.ventana?` · ${c.ventana}`:'')+(c.propone&&c.propone!==duenoOf(c)?` · Propone: ${c.propone}`:'')))),
-    h('td',{},c.jefe||'—'),
+    h('td',{},jefeOf(c)||'—'),
     h('td',{},duenoOf(c)?h('span',{},duenoOf(c)):h('span',{class:'muted'},'Sin dueño Claro')),
     h('td',{},h('span',{class:'chip '+chipTier(c.tier)},c.tier)),
     h('td',{class:'num'},c.score??'n/d'),
     h('td',{},h('span',{class:'chip '+chipMad(mad)},mad)),
     h('td',{},h('span',{class:'chip '+chipPot(pot)},pot)),
-    h('td',{class:'num'},c.fact==null?'—':[nf.format(c.fact),m?h('div',{},h('span',{class:'chip '+(sobre?'ok':'muted')},sobre?'Sobre umbral':'Bajo umbral')):null]),
+    h('td',{class:'num'},factRaw(c)==null?'—':[nf.format(factOf(c)),factOverride(c)?h('div',{class:'muted'},'promedio'):null,m?h('div',{},h('span',{class:'chip '+(sobre?'ok':'muted')},sobre?'Sobre umbral':'Bajo umbral')):null]),
     h('td',{},h('span',{class:'chip '+chipEst(est)},est)),
     h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
  const set=(k)=>(v)=>{Q[k]=v;draw();};
@@ -406,7 +521,29 @@ function vCliente(id){
   h('span',{class:'row'},h('button',{class:'sm',onclick:()=>download(`Reunion_${slug(c.empresa)}_${r.fecha}_${r.hora.replace(':','')}.ics`,icsEvent({uid:r.id,titulo:c.empresa,desc:'',fecha:r.fecha,hora:r.hora,durMin:r.durMin||60,status:r.status}))},'ICS',dlIcon()),
    h('button',{class:'sm danger',onclick:()=>{S.reunionesProg=reunionesProg().filter(x=>x.id!==r.id);saveState();rerender();}},'Quitar'))))):h('p',{class:'empty'},'Sin reuniones programadas desde la ficha.');
 
- const sug=sugerenciasDe(p);
+ const sug=solucionesParaCliente(c);
+ const pregs=preguntasDeSenales(id,c);
+ const sen=senalesOf(id);
+ const asesores=asesoresConocidos();
+ const duenoOpts=[['', 'Sin dueño Claro'],...asesores.map(a=>[a,a])];
+ if(duenoOf(c)&&!asesores.includes(duenoOf(c)))duenoOpts.push([duenoOf(c),duenoOf(c)]);
+ let factDraft=factRaw(c)==null?'':String(factRaw(c));
+ const factForm=h('div',{class:'form'},
+  field('Facturación promedio (L)',h('input',{type:'number',min:'0',step:'1000',inputmode:'numeric',value:factDraft,placeholder:c.fact==null?'Sin dato en cartera — captura promedio':'Corregir / promediar',oninput:e=>factDraft=e.target.value})),
+  h('p',{class:'row'},
+   h('button',{class:'primary',onclick:()=>{const v=Number(factDraft);if(!Number.isFinite(v)||v<0)return toast('Monto inválido');st('facts')[id]=Math.round(v);saveState();toast('Facturación guardada');rerender();}},'Guardar facturación'),
+   factOverride(c)?h('button',{onclick:()=>{delete st('facts')[id];saveState();toast('Se quitó el promedio local');rerender();}},'Usar dato de cartera'):null),
+  h('p',{class:'muted'},factOverride(c)?'Promedio local (override).':'Cartera: '+(c.fact==null?'sin dato':('L '+nf.format(c.fact)))));
+ const senForm=h('div',{class:'checks'},
+  ...SENAL_DEFS.map(d=>h('label',{class:'check'},
+   h('input',{type:'checkbox',checked:!!sen[d.k],onchange:e=>{const m=senalesOf(id);m[d.k]=!!e.target.checked;st('senales')[id]=m;saveState();rerender();}}),
+   d.label)));
+ const sugList=sug.length?h('ul',{class:'list'},sug.map(s=>h('li',{},
+  h('span',{},h('b',{},s.solucion),s.producto?h('span',{class:'muted'},` · ${s.producto}`):null,s.motivo?h('div',{class:'muted'},s.motivo):null),
+  h('span',{class:'row'},
+   h('span',{class:'chip '+chipClase(s.clase)},s.clase||'—'),
+   h('button',{class:'sm',onclick:()=>{add('ofertas',{solucion:s.solucion,clase:s.clase||'',monto:0,prob:25,etapa:'Prospección',cierre:'',nota:s.motivo||''});toast('Oferta agregada');}},'Agregar oferta'))))):h('p',{class:'empty'},'Marca señales o completa presencia/temas para ver soluciones del catálogo.');
+ const pregList=pregs.length?h('ul',{class:'list'},pregs.map(q=>h('li',{},h('span',{},q)))):h('p',{class:'empty'},'Marca hallazgos técnicos para generar preguntas a enfrentar.');
  const presForm=h('div',{class:'form'},
   field('Sitio web',sel(WEB_OPTS,p.web,v=>{p.web=v;Object.assign(p,stamp());saveState();rerender();})),
   field('Oficinas / sucursales',h('input',{type:'number',min:'0',value:p.oficinas,oninput:e=>{p.oficinas=e.target.value;}})),
@@ -419,22 +556,29 @@ function vCliente(id){
  return h('div',{class:'view'},back,h('header',{class:'page-head'},h('h1',{},c.empresa),h('p',{class:'sub'},`${c.rubro} · ${c.ola} · Tier ${c.tier} · Score ${c.score??'n/d'}`)),
   h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Ficha'),h('div',{class:'dl'},
-     h('p',{},h('span',{class:'muted'},'Jefe'),h('br'),c.jefe||'Sin dato'),
-     h('p',{},h('span',{class:'muted'},'Ejecutivo de venta (Dueño en Claro)'),h('br'),duenoOf(c)||'Sin dueño Claro',c.edueno?` · ${c.edueno}`:''),
+     h('p',{},h('span',{class:'muted'},'Jefe'),h('br'),jefeOf(c)||'Sin dato',asesorActivo(c)&&jefeOf(c)!==c.jefe?h('span',{class:'muted'},` · según asesor ${asesorActivo(c)}`):null),
+     h('p',{},h('span',{class:'muted'},'Ejecutivo de venta (Dueño en Claro)'),h('br'),
+      sel(duenoOpts,duenoOf(c),v=>{st('duenos')[id]=v;saveState();toast(v?'Ejecutivo asignado':'Sin dueño Claro');rerender();},{label:'Ejecutivo de venta'})),
      h('p',{},h('span',{class:'muted'},'Propuesto por el equipo'),h('br'),c.propone||'Sin dato'),
-     h('p',{},h('span',{class:'muted'},'Segmento'),h('br'),c.segmento||'—'),h('p',{},h('span',{class:'muted'},'Facturación (L)'),h('br'),c.fact==null?'—':nf.format(c.fact)),
+     h('p',{},h('span',{class:'muted'},'Segmento'),h('br'),c.segmento||'—'),
+     h('p',{},h('span',{class:'muted'},'Facturación (L)'),h('br'),factRaw(c)==null?'—':nf.format(factOf(c)),factOverride(c)?h('span',{class:'muted'},' · promedio local'):null),
      h('p',{},h('span',{class:'muted'},'Líneas'),h('br'),c.lineas??'—'),h('p',{},h('span',{class:'muted'},'Vencimiento móvil'),h('br'),c.ventana),
      h('p',{},h('span',{class:'muted'},'En Salesforce'),h('br'),c.sf||'—'),h('p',{},h('span',{class:'muted'},'Califica proyecto grande'),h('br'),c.grande||'—')),
+     factForm,
      c.alerta?h('p',{},h('span',{class:'chip bad'},c.alerta)):null,
      h('div',{class:'form'},field('Estado de gestión',sel(['Por validar','Por contactar','En pipeline (Jorge)','Contactado','Diagnóstico','Propuesta','Negociación','Ganada','Perdida','En pausa'],estado(c),v=>{st('estados')[id]=v;saveState();toast('Estado guardado');})))),
    h('div',{class:'card glass'},h('h2',{},'Cómo atacarla'),h('div',{class:'dl'},
      h('p',{},h('h3',{},'Ángulo'),c.angulo),h('p',{},h('h3',{},'Solución ancla'),c.ancla),h('p',{},h('h3',{},'Disparador'),c.disparador),h('p',{},h('h3',{},'Apertura'),c.apertura),
      h('p',{},h('h3',{},'Preguntas de descubrimiento'),c.discovery),h('p',{},h('h3',{},'Objeción probable'),c.objecion),h('p',{},h('h3',{},'Primer paso'),c.prueba),h('p',{},h('h3',{},'Siguiente paso'),c.siguiente)))),
   h('div',{class:'grid cols'},
+   h('div',{class:'card glass'},h('h2',{},'Hallazgos técnicos'),h('p',{class:'muted'},'Marca lo que investigaste del cliente (VPN, casa/proyecto, SAP ECC…).'),senForm),
+   h('div',{class:'card glass'},h('h2',{},'Preguntas a enfrentar'),pregList)),
+  h('div',{class:'card glass',style:'margin-bottom:16px'},h('h2',{},'Soluciones sugeridas (catálogo)'),sugList),
+  h('div',{class:'grid cols'},
    h('div',{class:'card glass'},h('h2',{},'Presencia digital y potencial'),
     h('div',{class:'row',style:'margin-bottom:10px'},h('span',{class:'chip'},'Madurez: '+madurezDe(p)),h('span',{class:'chip '+(potencialDe(p)==='Alto'?'ok':potencialDe(p)==='Bajo'?'bad':'')},'Potencial: '+potencialDe(p))),
     h('p',{class:'muted'},`${labelWeb(p.web)} · Oficinas: ${p.oficinas||'—'} ${p.ubicacion?`(${p.ubicacion})`:''} · Correo: ${labelCorreo(p.correo)} · App: ${p.app==='si'?'Sí':p.app==='no'?'No':'—'}`),
-    sug.length?h('ul',{class:'list'},sug.map(s=>h('li',{},h('span',{},'Sugerencia: '+s)))):h('p',{class:'empty'},'Completa el perfil para ver sugerencias.'),
+    sugerenciasDe(p).length?h('ul',{class:'list'},sugerenciasDe(p).map(s=>h('li',{},h('span',{},'Presencia: '+s)))):null,
     presForm),
    h('div',{class:'card glass'},h('h2',{},'Programar reunión'),progList,progForm)),
   h('div',{class:'grid cols'},
@@ -445,17 +589,31 @@ function vCliente(id){
    h('div',{class:'card glass'},h('h2',{},'Reuniones en la agenda base'),evs.length?h('ul',{class:'list'},evs.map(e=>{const a=st('agenda')[e.id]||{};return h('li',{},h('span',{},fdate((a.slot||`${e.fecha} ${e.hora}`).split(' ')[0])+' · '+(a.slot||`${e.fecha} ${e.hora}`).split(' ')[1]),h('span',{class:'chip'},a.status||'Sin elegir'));})):h('p',{class:'empty'},'Esta cuenta no tiene reunión en la agenda base.'),h('p',{},h('a',{class:'cell',href:'#/agenda'},'Ir a la agenda')))));
 }
 
+function solChipList(sols){
+ if(!sols.length)return h('p',{class:'empty'},'Sin soluciones mapeadas aún para este recorte.');
+ return h('ul',{class:'list'},sols.map(s=>h('li',{},
+  h('span',{},h('b',{},s.solucion),s.producto?h('span',{class:'muted'},` · ${s.producto}`):null),
+  h('span',{class:'chip '+chipClase(s.clase)},s.clase||'—'))));
+}
 function vRubros(){
  const root=h('div',{class:'view'});
  const draw=()=>{
   const base=conAlcance(D.clientes);
   const rs=[...new Set(base.map(c=>c.rubro).filter(Boolean))];
-  const items=rs.map(r=>{const cs=base.filter(c=>c.rubro===r);return {label:r,n:cs.length,href:'#/rubro/'+encodeURIComponent(r),text:`${cs.length} · L ${nf.format(sum(cs,c=>c.fact))}`};}).sort((a,b)=>b.n-a.n);
+  const items=rs.map(r=>{const cs=base.filter(c=>c.rubro===r);return {label:r,n:cs.length,href:'#/rubro/'+encodeURIComponent(r),text:`${cs.length} · L ${nf.format(sum(cs,factOf))}`};}).sort((a,b)=>b.n-a.n);
+  const bloques=items.map(it=>{
+   const cs=base.filter(c=>c.rubro===it.label);
+   const sols=solucionesParaRubro(cs);
+   return h('div',{class:'rubro-sols'},
+    h('h3',{},h('a',{class:'cell',href:it.href},it.label),h('span',{class:'muted'},` · ${cs.length} · ${sols.length} soluciones`)),
+    solChipList(sols));
+  });
   root.replaceChildren(
    h('header',{class:'page-head'},h('h1',{},'Rubros'),h('p',{class:'sub'},[Q.jefe&&`Jefe: ${Q.jefe}`,Q.factBand&&getMinFact()&&`Facturación ${Q.factBand==='sobre'?'≥':'<'} L ${nf.format(getMinFact())}`,`${base.length} cuentas`].filter(Boolean).join(' · ')||'Cuentas y facturación por rubro.')),
    jefeFilterBar(draw),
    factFilterBar(draw),
-   h('div',{class:'card glass'},items.length?bars(items,{color:'var(--brand)'}):h('p',{class:'empty'},'Sin rubros para este filtro.')));
+   h('div',{class:'card glass'},items.length?bars(items,{color:'var(--brand)'}):h('p',{class:'empty'},'Sin rubros para este filtro.')),
+   h('div',{class:'card glass',style:'margin-top:16px'},h('h2',{},'Soluciones que aplican'),h('p',{class:'muted'},'Claro, Partner y A la medida según cuentas del filtro actual.'),...bloques));
  };
  draw();return root;
 }
@@ -467,19 +625,19 @@ function vRubro(name){
   const pb=D.playbook.find(p=>p.perfil===name)||D.playbook.find(p=>cs.some(c=>c.perfil===p.perfil));
   const ab=cs.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)));
   const pen=KEYS.map(k=>{const t=cs.filter(c=>tiene(c,k.re)).length,o=cs.filter(c=>!tiene(c,k.re)&&conOferta(c,k.re)).length;return {k:k.k,t,o,libre:cs.length-t-o};}).filter(x=>x.t||x.o);
-  const rec=KEYS.map(k=>({k:k.k,n:cs.filter(c=>(c.temas||'').split('; ').some(t=>k.re.test(t))).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n);
+  const sols=solucionesParaRubro(cs);
   const table=h('div',{class:'wrap glass'},h('table',{},
    h('thead',{},h('tr',{},['Empresa','Jefe','Ola','Tier','Facturación (L)','Ofertas'].map((t,i)=>h('th',{class:i>3?'num':''},t)))),
    h('tbody',{},cs.sort((a,b)=>(b.score??-1)-(a.score??-1)).map(c=>h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
-    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},c.jefe||'—'),h('td',{},c.ola),h('td',{},c.tier),
-    h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),h('td',{class:'num'},ofertas(c.id).length||'—'))))));
+    h('td',{},h('a',{class:'cell',href:'#/cliente/'+c.id},c.empresa)),h('td',{},jefeOf(c)||'—'),h('td',{},c.ola),h('td',{},c.tier),
+    h('td',{class:'num'},factRaw(c)==null?'—':nf.format(factOf(c))),h('td',{class:'num'},ofertas(c.id).length||'—'))))));
   root.replaceChildren(
    h('a',{class:'back',href:'#/rubros'},'← Rubros'),
-   h('header',{class:'page-head'},h('h1',{},name),h('p',{class:'sub'},`${cs.length} cuentas${Q.jefe?` · ${Q.jefe}`:''} · Facturación L ${nf.format(sum(cs,c=>c.fact))} · Pipeline abierto L ${nf.format(sum(ab,o=>o.monto))}`)),
+   h('header',{class:'page-head'},h('h1',{},name),h('p',{class:'sub'},`${cs.length} cuentas${Q.jefe?` · ${Q.jefe}`:''} · Facturación L ${nf.format(sum(cs,factOf))} · Pipeline abierto L ${nf.format(sum(ab,o=>o.monto))}`)),
    jefeFilterBar(draw),
    factFilterBar(draw),
    h('div',{class:'grid cols'},
-    h('div',{class:'card glass'},h('h2',{},'Soluciones sugeridas para este rubro'),bars(rec.map(x=>({label:x.k,n:x.n})),{color:'var(--brand)'})),
+    h('div',{class:'card glass'},h('h2',{},'Soluciones del catálogo'),solChipList(sols)),
     h('div',{class:'card glass'},h('h2',{},'Penetración registrada'),pen.length?h('ul',{class:'list'},pen.map(p=>h('li',{},h('span',{},p.k),h('span',{class:'muted'},`${p.t} la tienen · ${p.o} con oferta · ${p.libre} libres`)))):h('p',{class:'empty'},'Aún no hay tecnologías ni ofertas en este rubro.'))),
    pb?h('div',{class:'card glass',style:'margin-bottom:16px'},h('h2',{},'Playbook'),h('div',{class:'dl'},h('p',{},h('h3',{},'Ángulo'),pb.angulo),h('p',{},h('h3',{},'Descubrimiento'),pb.discovery),h('p',{},h('h3',{},'Objeción'),pb.objecion),h('p',{},h('h3',{},'Primer paso'),pb.prueba))):null,
    table);
@@ -567,18 +725,42 @@ function vAjustes(){
    h('button',{class:'primary',onclick:()=>{const v=Number(minFact);if(!Number.isFinite(v)||v<=0){setMinFact(0);toast('Umbral quitado');route();return;}setMinFact(v);toast(`Umbral: L ${nf.format(v)}`);route();}},'Guardar umbral'),
    h('button',{onclick:()=>{setMinFact(0);minFact='';toast('Umbral quitado');route();}},'Quitar')),
   mNow?h('p',{class:'muted',style:'margin-top:12px'},`${sobreNow} de ${D.clientes.length} cuentas están ≥ L ${nf.format(mNow)}. ` ,h('a',{class:'cell',href:'#/cuentas'},'Ver en Cuentas')):null);
+ const jefesOpts=jefesDisponibles();
+ const asesores=asesoresConocidos();
+ const mapJ=st('jefesAsesor');
+ const drafts={};for(const a of asesores)drafts[a]=mapJ[a]||'';
+ const jefeAsesorCard=h('div',{class:'card glass'},
+  h('h2',{},'Jefes por asesor'),
+  h('p',{class:'muted'},'Si mueves un asesor a otro jefe, sus cuentas (por dueño o propone) siguen al nuevo jefe en filtros y KPIs.'),
+  asesores.length?h('div',{class:'wrap'},h('table',{},
+   h('thead',{},h('tr',{},['Asesor','Jefe actual (efectivo)','Cambiar a','Cuentas',''].map(t=>h('th',{},t)))),
+   h('tbody',{},asesores.map(a=>{
+    const n=D.clientes.filter(c=>asesorActivo(c)===a).length;
+    const sample=D.clientes.find(c=>asesorActivo(c)===a);
+    const efectivo=sample?jefeOf(sample):(mapJ[a]||'—');
+    return h('tr',{},
+     h('td',{},a),
+     h('td',{},efectivo||'—'),
+     h('td',{},sel([['','(usar jefe del JSON)'],...jefesOpts.map(j=>[j,j])],drafts[a]||'',v=>{drafts[a]=v;},{label:'Jefe de '+a})),
+     h('td',{class:'num'},String(n)),
+     h('td',{},h('button',{class:'sm primary',onclick:()=>{
+      if(!drafts[a])delete st('jefesAsesor')[a];else st('jefesAsesor')[a]=drafts[a];
+      saveState();toast(`Jefe de ${a} actualizado`);route();
+     }},'Guardar')));
+   })))):h('p',{class:'empty'},'No hay asesores en la cartera cargada.'));
  return h('div',{class:'view'},
   h('header',{class:'page-head'},h('h1',{},'Ajustes'),h('p',{class:'sub'},'GitHub Pages no guarda datos en servidor. Todo queda en este navegador.')),
   h('div',{class:'grid cols'},
    carteraCard,
    umbralCard,
+   jefeAsesorCard,
    h('div',{class:'card glass'},h('h2',{},'Tu nombre en este equipo'),h('p',{class:'muted'},'Se etiqueta en notas, ofertas, presencia y reuniones.'),
     field('Nombre',h('input',{value:nombre,placeholder:'Ej. Linda Guerra',oninput:e=>nombre=e.target.value})),
     h('button',{class:'primary',onclick:()=>{try{localStorage.setItem(LS_WHO,nombre.trim());toast('Nombre guardado');}catch{toast('No se pudo guardar');}}},'Guardar nombre')),
    h('div',{class:'card glass'},h('h2',{},'Cargar datos de cuentas'),h('p',{class:'muted'},'Archivo local con clientes, catálogo, playbook y agenda. Nunca al repositorio.'),
     dropzone(f=>readJsonFile(f,applyCartera)),
     h('p',{class:'row',style:'margin-top:12px'},h('button',{onclick:()=>{localStorage.removeItem(LS_DATA);location.reload();}},'Volver a demostración'))),
-   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Tecnologías, ofertas, notas, estados, agenda, presencia y reuniones.'),
+   h('div',{class:'card glass'},h('h2',{},'Respaldo de tu seguimiento'),h('p',{class:'muted'},'Incluye tecnologías, ofertas, notas, estados, agenda, presencia, reuniones, ejecutivo, jefe por asesor, facturación promedio y señales.'),
     h('p',{class:'row'},h('button',{class:'primary',onclick:()=>download('seguimiento-wallet.json',JSON.stringify(S,null,1),'application/json')},'Descargar respaldo'),
      h('label',{class:'btn'},'Importar respaldo',h('input',{type:'file',accept:'application/json,.json',hidden:true,onchange:e=>{const f=e.target.files[0];if(f)readJsonFile(f,j=>{S=j;saveState({backup:false});toast('Respaldo importado');route();});}}))),
     h('p',{},h('button',{class:'danger',onclick:()=>{if(!S._conf){S._conf=1;toast('Toca otra vez para borrar todo el seguimiento');setTimeout(()=>delete S._conf,3000);return;}S={};saveState({backup:false});toast('Seguimiento borrado');route();}},'Borrar seguimiento'))),
@@ -603,6 +785,12 @@ async function init(){
  try{const raw=localStorage.getItem(LS_DATA);if(raw){D=JSON.parse(raw);DEMO=false;}}catch{}
  if(!D){try{D=await (await fetch('data/demo.json')).json();}catch{$('#main').textContent='No se pudo cargar los datos de demostración.';return;}}
  try{const med=await (await fetch('data/medida.json')).json();D.catalogo=D.catalogo.filter(x=>x.clase!=='A la medida').concat(med);}catch{}
+ const ensureHitss=[
+  {area:'ERP',solucion:'SAP S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Lámina de partners',nota:'Vía Global HITSS (ej. Hondupalma)'},
+  {area:'ERP',solucion:'Migración SAP ECC → S/4HANA',clase:'Partner',producto:'Global HITSS',fuente:'Partner HITSS',nota:'Migración ECC 6.0 a S/4HANA con Global HITSS'}
+ ];
+ for(const item of ensureHitss){if(!D.catalogo.some(x=>x.solucion===item.solucion))D.catalogo.push(item);
+  else{const x=D.catalogo.find(x=>x.solucion===item.solucion);if(x&&!/hitss/i.test(String(x.producto||''))){x.producto=item.producto;x.nota=item.nota||x.nota;}}}
  DEMO=!!(D.meta&&D.meta.demo);
  const b=$('#banner');
  if(DEMO){
