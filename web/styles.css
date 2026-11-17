@@ -133,6 +133,8 @@ h3{font-size:12px;font-weight:600;margin:0 0 4px;color:var(--muted);text-transfo
 }
 .jefe-bar-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
 .jefe-bar button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.fact-bar button.on{background:var(--info);color:#fff;border-color:var(--info)}
+tr.row-sobre td{background:rgba(31,122,69,.04)}
 .filters-panel{
   margin-bottom:16px;padding:16px 16px 12px;border-radius:var(--r);
   background:rgba(255,255,255,.65);border:1px solid var(--line);box-shadow:var(--shadow);

@@ -1,5 +1,5 @@
 // Wallet Preventa Honduras. Sitio estático sin dependencias (GitHub Pages).
-const LS_DATA='wallet.data.v1', LS_STATE='wallet.state.v1', LS_BACKUPS='wallet.backups.v1', LS_WHO='wallet.who.v1';
+const LS_DATA='wallet.data.v1', LS_STATE='wallet.state.v1', LS_BACKUPS='wallet.backups.v1', LS_WHO='wallet.who.v1', LS_MINFACT='wallet.minFact.v1';
 const ETAPAS=['Prospección','Diagnóstico','Propuesta','Negociación','Ganada','Perdida'];
 const MAX_BACKUPS=30;
 const WEB_OPTS=[['','Sin registrar'],['ninguno','Sin sitio'],['info','Informativo'],['ventas','Con ventas en línea']];
@@ -187,11 +187,20 @@ function clashMessages(fecha,hora,durMin,exceptId){
 }
 
 // ---------- vistas ----------
-const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:''};
+const Q={q:'',dueno:'',prop:'',jefe:'',rubro:'',ola:'',tier:'',vent:'',estado:'',pres:'',ofic:'',pot:'',factBand:''};
 const duenoOf=c=>(c.dueno&&String(c.dueno).trim())||'';
 const ejecVentaLabel=c=>duenoOf(c)||'Sin dueño Claro';
+const factOf=c=>{const n=Number(c.fact);return Number.isFinite(n)?n:0;};
+function getMinFact(){try{const n=Number(localStorage.getItem(LS_MINFACT));return Number.isFinite(n)&&n>0?n:0;}catch{return 0;}}
+function setMinFact(n){try{const v=Number(n);if(!Number.isFinite(v)||v<=0)localStorage.removeItem(LS_MINFACT);else localStorage.setItem(LS_MINFACT,String(Math.round(v)));}catch{toast('No se pudo guardar el umbral');}}
 const jefesDisponibles=()=>[...new Set(D.clientes.map(c=>c.jefe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
 const conJefe=list=>Q.jefe?list.filter(c=>c.jefe===Q.jefe):list;
+function conAlcance(list){
+ let L=conJefe(list);const m=getMinFact();
+ if(m&&Q.factBand==='sobre')L=L.filter(c=>factOf(c)>=m);
+ if(m&&Q.factBand==='bajo')L=L.filter(c=>factOf(c)<m);
+ return L;
+}
 function jefeFilterBar(onPick){
  const jefes=jefesDisponibles();
  return h('div',{class:'jefe-bar'},
@@ -203,10 +212,25 @@ function jefeFilterBar(onPick){
   }),
   !jefes.length?h('span',{class:'muted'},'Tu JSON no trae jefe — vuelve a cargarlo en Ajustes'):null);
 }
+function factFilterBar(onPick){
+ const m=getMinFact();
+ if(!m)return h('div',{class:'jefe-bar fact-bar'},
+  h('span',{class:'jefe-bar-label'},'Facturación'),
+  h('span',{class:'muted'},'Sin umbral. Define el mínimo en Ajustes.'),
+  h('a',{class:'btn sm',href:'#/ajustes'},'Ir a Ajustes'));
+ const base=conJefe(D.clientes);
+ const sobre=base.filter(c=>factOf(c)>=m).length;
+ const bajo=base.length-sobre;
+ return h('div',{class:'jefe-bar fact-bar'},
+  h('span',{class:'jefe-bar-label'},'Facturación'),
+  h('button',{class:'sm'+(Q.factBand?'':' on'),onclick:()=>{Q.factBand='';onPick();}},`Todos · ${base.length}`),
+  h('button',{class:'sm'+(Q.factBand==='sobre'?' on':''),onclick:()=>{Q.factBand=Q.factBand==='sobre'?'':'sobre';onPick();}},`≥ L ${nf.format(m)} · ${sobre}`),
+  h('button',{class:'sm'+(Q.factBand==='bajo'?' on':''),onclick:()=>{Q.factBand=Q.factBand==='bajo'?'':'bajo';onPick();}},`< L ${nf.format(m)} · ${bajo}`));
+}
 function vResumen(){
  const root=h('div',{class:'view'});
  const draw=()=>{
-  const C=conJefe(D.clientes),now=new Date();
+  const C=conAlcance(D.clientes),now=new Date();
   const ab=C.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)).map(o=>({...o,cid:c.id})));
   const contact=C.filter(c=>!['Por contactar','Por validar','En pausa'].includes(estado(c))).length;
   const ag=D.agenda.filter(e=>e.tipo==='Cuenta'&&(!Q.jefe||(e.cuenta_id&&clienteById(e.cuenta_id)?.jefe===Q.jefe)));
@@ -216,6 +240,8 @@ function vResumen(){
   const fuera=C.flatMap(c=>ofertas(c.id)).filter(o=>o.clase==='Fuera de catálogo').length;
   const ola1=C.filter(c=>c.ola==='Ola 1').length;
   const sinDueno=C.filter(c=>!duenoOf(c)).length;
+  const minF=getMinFact();
+  const sobreMin=minF?C.filter(c=>factOf(c)>=minF).length:null;
   const por=(k)=>[...new Map(C.map(c=>[c[k]||'Sin dato',0])).keys()].map(v=>({label:v,n:C.filter(c=>(c[k]||'Sin dato')===v).length}));
   const olas=['Ola 1','Ola 2','Ola 3','En pipeline','Validar','Pausa'].map(o=>({label:o,n:C.filter(c=>c.ola===o).length,href:'#/cuentas?ola='+encodeURIComponent(o)+(Q.jefe?'&jefe='+encodeURIComponent(Q.jefe):''),color:o==='Ola 1'?'var(--ok)':o==='Validar'?'var(--warn)':o==='Pausa'?'var(--bad)':undefined})).filter(x=>x.n);
   const rub=por('rubro').sort((a,b)=>b.n-a.n).map(x=>({...x,href:'#/rubro/'+encodeURIComponent(x.label)}));
@@ -249,10 +275,11 @@ function vResumen(){
     h('h1',{},'Resumen'),
     h('p',{class:'sub'},Q.jefe?`${Q.jefe} · ${C.length} cuentas · Corte ${D.meta.corte}`:`${D.clientes.length} cuentas · Corte ${D.meta.corte} · ${D.meta.fuente}`)),
    jefeFilterBar(draw),
+   factFilterBar(draw),
    h('div',{class:'grid kpis-hero'},
-    kpi(nf.format(C.length),Q.jefe?'Cuentas del jefe':'Cuentas','hero-kpi'),
+    kpi(nf.format(C.length),Q.jefe||Q.factBand?'Cuentas filtradas':'Cuentas','hero-kpi'),
     kpi(nf.format(sum(C,c=>c.fact)),'Facturación (L)','hero-kpi'),
-    kpi(nf.format(sum(ab,o=>o.monto)),'Pipeline abierto','hero-kpi')),
+    kpi(minF?`${sobreMin}/${C.length}`:nf.format(sum(ab,o=>o.monto)),minF?`Sobre umbral L ${nf.format(minF)}`:'Pipeline abierto','hero-kpi')),
    h('section',{class:'block'},
     h('h2',{class:'section-title'},'KPI por jefe'),
     h('div',{class:'grid jefes-kpis'},...jefeCards)),
@@ -279,11 +306,13 @@ function vResumen(){
 }
 
 function filtroCuentas(){
+ const m=getMinFact();
  return D.clientes.filter(c=>{
   const p=presencia(c.id);const of=Number(p.oficinas)||0;
   const oficOk=!Q.ofic||(Q.ofic==='0'?of===0:Q.ofic==='1-2'?of>=1&&of<=2:Q.ofic==='3+'?of>=3:true);
   const duenoOk=!Q.dueno||(Q.dueno==='__none__'?!duenoOf(c):duenoOf(c)===Q.dueno);
-  return (!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||c.jefe===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
+  const factOk=!m||!Q.factBand||(Q.factBand==='sobre'?factOf(c)>=m:factOf(c)<m);
+  return factOk&&(!Q.q||c.empresa.toLowerCase().includes(Q.q.toLowerCase()))&&duenoOk&&(!Q.prop||c.propone===Q.prop)&&(!Q.jefe||c.jefe===Q.jefe)&&(!Q.rubro||c.rubro===Q.rubro)&&(!Q.ola||c.ola===Q.ola)&&(!Q.tier||c.tier===Q.tier)&&(!Q.vent||c.ventana===Q.vent)&&(!Q.estado||estado(c)===Q.estado)
    &&(!Q.pres||madurezDe(p)===Q.pres)&&oficOk&&(!Q.pot||potencialDe(p)===Q.pot);
  });
 }
@@ -291,14 +320,16 @@ function vCuentas(){
  const u=(k)=>[...new Set(D.clientes.map(c=>c[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
  const duenos=[...new Set(D.clientes.map(duenoOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
  const duenoOpts=[['__none__','Sin dueño Claro'],...duenos.map(x=>[x,x])];
- const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});const jefeSlot=h('div',{});
+ const out=h('div',{class:'wrap glass'});const cnt=h('p',{class:'sub'});const jefeSlot=h('div',{});const factSlot=h('div',{});
  const draw=()=>{
   const r=filtroCuentas().sort((a,b)=>(b.score??-1)-(a.score??-1));
+  const m=getMinFact();
   cnt.textContent=`${r.length} de ${D.clientes.length} cuentas · toca una fila para abrir la ficha`;
   jefeSlot.replaceChildren(jefeFilterBar(draw));
+  factSlot.replaceChildren(factFilterBar(draw));
   out.replaceChildren(h('table',{},h('thead',{},h('tr',{},['Ola','Empresa','Jefe','Ejecutivo venta','Tier','Score','Presencia','Potencial','Facturación','Estado','Ofertas'].map((t,i)=>h('th',{class:[5,8,10].includes(i)?'num':''},t)))),
-  h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);
-   return h('tr',{class:'link',onclick:()=>{location.hash='#/cliente/'+c.id;}},
+  h('tbody',{},r.map(c=>{const p=presencia(c.id);const mad=madurezDe(p);const pot=potencialDe(p);const est=estado(c);const sobre=m&&factOf(c)>=m;
+   return h('tr',{class:'link'+(sobre?' row-sobre':''),onclick:()=>{location.hash='#/cliente/'+c.id;}},
     h('td',{},h('span',{class:'chip'},c.ola)),
     h('td',{},h('div',{class:'empresa-cell'},h('a',{class:'cell',href:'#/cliente/'+c.id,onclick:e=>e.stopPropagation()},c.empresa),h('span',{class:'meta'},(c.rubro||'')+(c.ventana?` · ${c.ventana}`:'')+(c.propone&&c.propone!==duenoOf(c)?` · Propone: ${c.propone}`:'')))),
     h('td',{},c.jefe||'—'),
@@ -307,11 +338,11 @@ function vCuentas(){
     h('td',{class:'num'},c.score??'n/d'),
     h('td',{},h('span',{class:'chip '+chipMad(mad)},mad)),
     h('td',{},h('span',{class:'chip '+chipPot(pot)},pot)),
-    h('td',{class:'num'},c.fact==null?'—':nf.format(c.fact)),
+    h('td',{class:'num'},c.fact==null?'—':[nf.format(c.fact),m?h('div',{},h('span',{class:'chip '+(sobre?'ok':'muted')},sobre?'Sobre umbral':'Bajo umbral')):null]),
     h('td',{},h('span',{class:'chip '+chipEst(est)},est)),
     h('td',{class:'num'},ofertas(c.id).length||'—'));}))));};
  const set=(k)=>(v)=>{Q[k]=v;draw();};
- const activeFilters=[Q.dueno,Q.prop,Q.jefe,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot].filter(Boolean).length;
+ const activeFilters=[Q.dueno,Q.prop,Q.jefe,Q.rubro,Q.ola,Q.tier,Q.vent,Q.estado,Q.pres,Q.ofic,Q.pot,Q.factBand].filter(Boolean).length;
  const fl=h('details',{class:'filters-panel',open:true},
   h('summary',{},h('span',{},'Más filtros'),h('span',{class:'hint'},activeFilters?`${activeFilters} activos`:'Ejecutivo, ola, rubro…')),
   h('div',{class:'filters-top',style:'margin-top:14px'},
@@ -330,7 +361,7 @@ function vCuentas(){
    h('div',{style:'display:flex;align-items:end'},h('button',{onclick:()=>{Object.keys(Q).forEach(k=>Q[k]='');draw();}},'Limpiar'))));
  draw();return h('div',{class:'view'},
   h('header',{class:'page-head'},h('div',{class:'eyebrow'},h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demo':'Cartera real')),h('h1',{},'Cuentas'),cnt),
-  jefeSlot,fl,out);}
+  jefeSlot,factSlot,fl,out);}
 
 function vCliente(id){
  const c=clienteById(id);if(!c)return h('p',{class:'empty'},'No se encontró la cuenta.');
@@ -417,21 +448,22 @@ function vCliente(id){
 function vRubros(){
  const root=h('div',{class:'view'});
  const draw=()=>{
-  const base=conJefe(D.clientes);
+  const base=conAlcance(D.clientes);
   const rs=[...new Set(base.map(c=>c.rubro).filter(Boolean))];
   const items=rs.map(r=>{const cs=base.filter(c=>c.rubro===r);return {label:r,n:cs.length,href:'#/rubro/'+encodeURIComponent(r),text:`${cs.length} · L ${nf.format(sum(cs,c=>c.fact))}`};}).sort((a,b)=>b.n-a.n);
   root.replaceChildren(
-   h('header',{class:'page-head'},h('h1',{},'Rubros'),h('p',{class:'sub'},Q.jefe?`Filtrado por ${Q.jefe} · ${base.length} cuentas`:'Cuentas y facturación por rubro.')),
+   h('header',{class:'page-head'},h('h1',{},'Rubros'),h('p',{class:'sub'},[Q.jefe&&`Jefe: ${Q.jefe}`,Q.factBand&&getMinFact()&&`Facturación ${Q.factBand==='sobre'?'≥':'<'} L ${nf.format(getMinFact())}`,`${base.length} cuentas`].filter(Boolean).join(' · ')||'Cuentas y facturación por rubro.')),
    jefeFilterBar(draw),
-   h('div',{class:'card glass'},items.length?bars(items,{color:'var(--brand)'}):h('p',{class:'empty'},'Sin rubros para este jefe.')));
+   factFilterBar(draw),
+   h('div',{class:'card glass'},items.length?bars(items,{color:'var(--brand)'}):h('p',{class:'empty'},'Sin rubros para este filtro.')));
  };
  draw();return root;
 }
 function vRubro(name){
  const root=h('div',{class:'view'});
  const draw=()=>{
-  const cs=conJefe(D.clientes.filter(c=>c.rubro===name));
-  if(!cs.length){root.replaceChildren(h('a',{class:'back',href:'#/rubros'},'← Rubros'),h('p',{class:'empty'},Q.jefe?`Sin cuentas de este rubro para ${Q.jefe}.`:'Rubro sin cuentas.'),jefeFilterBar(draw));return;}
+  const cs=conAlcance(D.clientes.filter(c=>c.rubro===name));
+  if(!cs.length){root.replaceChildren(h('a',{class:'back',href:'#/rubros'},'← Rubros'),h('p',{class:'empty'},'Sin cuentas para este filtro.'),jefeFilterBar(draw),factFilterBar(draw));return;}
   const pb=D.playbook.find(p=>p.perfil===name)||D.playbook.find(p=>cs.some(c=>c.perfil===p.perfil));
   const ab=cs.flatMap(c=>ofertas(c.id).filter(o=>!['Ganada','Perdida'].includes(o.etapa)));
   const pen=KEYS.map(k=>{const t=cs.filter(c=>tiene(c,k.re)).length,o=cs.filter(c=>!tiene(c,k.re)&&conOferta(c,k.re)).length;return {k:k.k,t,o,libre:cs.length-t-o};}).filter(x=>x.t||x.o);
@@ -445,6 +477,7 @@ function vRubro(name){
    h('a',{class:'back',href:'#/rubros'},'← Rubros'),
    h('header',{class:'page-head'},h('h1',{},name),h('p',{class:'sub'},`${cs.length} cuentas${Q.jefe?` · ${Q.jefe}`:''} · Facturación L ${nf.format(sum(cs,c=>c.fact))} · Pipeline abierto L ${nf.format(sum(ab,o=>o.monto))}`)),
    jefeFilterBar(draw),
+   factFilterBar(draw),
    h('div',{class:'grid cols'},
     h('div',{class:'card glass'},h('h2',{},'Soluciones sugeridas para este rubro'),bars(rec.map(x=>({label:x.k,n:x.n})),{color:'var(--brand)'})),
     h('div',{class:'card glass'},h('h2',{},'Penetración registrada'),pen.length?h('ul',{class:'list'},pen.map(p=>h('li',{},h('span',{},p.k),h('span',{class:'muted'},`${p.t} la tienen · ${p.o} con oferta · ${p.libre} libres`)))):h('p',{class:'empty'},'Aún no hay tecnologías ni ofertas en este rubro.'))),
@@ -513,19 +546,32 @@ function vCatalogo(){
 function vAjustes(){
  const backups=loadBackups();
  let nombre=who();
+ let minFact=getMinFact()||'';
+ const mNow=getMinFact();
+ const sobreNow=mNow?D.clientes.filter(c=>factOf(c)>=mNow).length:0;
  const carteraCard=h('div',{class:'card glass'},
   h('h2',{},'Cartera activa'),
   h('div',{class:'status-card'},
    h('div',{class:'status-row'},h('span',{},'Modo'),h('span',{class:'live-pill'+(DEMO?'':' ok')},DEMO?'Demostración':'Datos reales')),
    h('div',{class:'status-row'},h('span',{},'Cuentas'),h('strong',{},nf.format(D.clientes.length))),
    h('div',{class:'status-row'},h('span',{},'Fuente'),h('span',{class:'muted'},D.meta?.fuente||'—')),
-   h('div',{class:'status-row'},h('span',{},'Corte'),h('span',{class:'muted'},D.meta?.corte||'—'))),
+   h('div',{class:'status-row'},h('span',{},'Corte'),h('span',{class:'muted'},D.meta?.corte||'—')),
+   h('div',{class:'status-row'},h('span',{},'Umbral facturación'),h('strong',{},mNow?`L ${nf.format(mNow)}`:'Sin definir'))),
   DEMO?h('p',{class:'muted',style:'margin:12px 0 0'},'Para ver facturación real de Claro, carga el JSON abajo. No se sube a GitHub.')
    :h('p',{class:'muted',style:'margin:12px 0 0'},'Esta cartera vive solo en tu navegador.'));
+ const umbralCard=h('div',{class:'card glass'},
+  h('h2',{},'Clasificación por facturación mínima'),
+  h('p',{class:'muted'},'Define el monto mínimo (L). En Resumen, Cuentas y Rubros podrás filtrar quién está sobre o bajo ese umbral.'),
+  field('Facturación mínima (L)',h('input',{type:'number',min:'0',step:'1000',inputmode:'numeric',value:minFact,placeholder:'Ej. 20000',oninput:e=>minFact=e.target.value})),
+  h('p',{class:'row',style:'margin-top:12px'},
+   h('button',{class:'primary',onclick:()=>{const v=Number(minFact);if(!Number.isFinite(v)||v<=0){setMinFact(0);toast('Umbral quitado');route();return;}setMinFact(v);toast(`Umbral: L ${nf.format(v)}`);route();}},'Guardar umbral'),
+   h('button',{onclick:()=>{setMinFact(0);minFact='';toast('Umbral quitado');route();}},'Quitar')),
+  mNow?h('p',{class:'muted',style:'margin-top:12px'},`${sobreNow} de ${D.clientes.length} cuentas están ≥ L ${nf.format(mNow)}. ` ,h('a',{class:'cell',href:'#/cuentas'},'Ver en Cuentas')):null);
  return h('div',{class:'view'},
   h('header',{class:'page-head'},h('h1',{},'Ajustes'),h('p',{class:'sub'},'GitHub Pages no guarda datos en servidor. Todo queda en este navegador.')),
   h('div',{class:'grid cols'},
    carteraCard,
+   umbralCard,
    h('div',{class:'card glass'},h('h2',{},'Tu nombre en este equipo'),h('p',{class:'muted'},'Se etiqueta en notas, ofertas, presencia y reuniones.'),
     field('Nombre',h('input',{value:nombre,placeholder:'Ej. Linda Guerra',oninput:e=>nombre=e.target.value})),
     h('button',{class:'primary',onclick:()=>{try{localStorage.setItem(LS_WHO,nombre.trim());toast('Nombre guardado');}catch{toast('No se pudo guardar');}}},'Guardar nombre')),
